@@ -1,0 +1,15 @@
+artifact_uri: file:///home/ubuntu/hooni/nlp_open_cookbook/classification/model/NB/mlruns/1/c83864e5ae574f6f91002429a8927349/artifacts
+end_time: 1648632067973
+entry_point_name: ''
+experiment_id: '1'
+lifecycle_stage: active
+name: ''
+run_id: c83864e5ae574f6f91002429a8927349
+run_uuid: c83864e5ae574f6f91002429a8927349
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1648632065479
+status: 3
+tags: []
+user_id: root

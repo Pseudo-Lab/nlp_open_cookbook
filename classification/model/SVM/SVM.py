@@ -2,15 +2,20 @@ import sys
 import mlflow
 import pandas as pd
 
+from konlpy.tag import Mecab
 from sklearn.svm import SVC
 from sklearn.metrics import f1_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 def load_data(train_dir, test_dir):
     df_train = pd.read_csv(train_dir)
     df_test = pd.read_csv(test_dir)
+
+    df_train = df_train.dropna()
+    df_test = df_test.dropna()
 
     train_x, train_y = df_train["text"].tolist(), df_train["label"].tolist()
     test_x, test_y = df_test["text"].tolist(), df_test["label"].tolist()
@@ -20,8 +25,12 @@ def load_data(train_dir, test_dir):
 
 def pos_tagging(sentences):
     mecab = Mecab()
-    pos_sentences = [mecab.morphs(sentence) for sentence in sentences]
+    pos_sentences = [" ".join(mecab.nouns(sentence)) for sentence in sentences]
     return pos_sentences
+
+
+def identity_tokenizer(text):
+    return text
 
 
 def text_to_vector():
@@ -44,11 +53,7 @@ def build_model(train_x, train_y):
     return grid_search, grid_search.best_params_
 
 
-def evaluate(data_dir, output_dir, train_dir, test_dir, tfidf_vector):
-    df_test = pd.read_csv(data_dir+test_dir)
-    test_x, test_y = df_test["sentence"].tolist(), df_test["intent"].tolist()
-
-    pos_test_x = pos_tagging(test_x)
+def evaluate(pos_test_x, test_y):
     tfidf_test_x = tfidf_vector.transform(pos_test_x)
     pred_y = model.predict(tfidf_test_x)
 
@@ -69,11 +74,15 @@ if __name__ == "__main__":
     train_x, train_y, test_x, test_y = load_data(train_dir, test_dir)
     
     pos_train_x = pos_tagging(train_x)
+    print(pos_train_x[0:3])
     pos_test_x = pos_tagging(test_x)
 
-    tfidf_train_x, tfidf_vector = tfidf_vector(pos_train_x)
-    model, best_params = build_model(tfidf_train_x, train_y)
-    mlflow.log_param("parameters", params)
+    print(identity_tokenizer(pos_train_x[0]))
+    tfidf = TfidfVectorizer(tokenizer=None, preprocessor=None, lowercase=False)
+    tfidf_train_x = tfidf.fit_transform(pos_train_x)
+    print(tfidf_train_x[0])
+    tfidf_test_x = tfidf.transform(pos_test_x)
 
-    score_100 = evaluate(data_dir, output_dir, train_dir, test_100_dir, tfidf_vector)
-    mlflow.log_metric("F1 1.0.0", score_100)
+    # model, best_params = build_model(tfidf_train_x, train_y)
+
+    # score_100 = evaluate(data_dir, output_dir, train_dir, test_100_dir, tfidf_vector)

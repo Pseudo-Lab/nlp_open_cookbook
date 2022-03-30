@@ -1,0 +1,4 @@
+artifact_location: file:///home/ubuntu/hooni/nlp_open_cookbook/classification/model/NB/mlruns/1
+experiment_id: '1'
+lifecycle_stage: active
+name: category_classification
