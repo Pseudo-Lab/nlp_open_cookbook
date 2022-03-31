@@ -1,0 +1,8 @@
+mlruns/
+*.log
+*.pot
+*.pyc
+__pycache__/
+.idea
+.cache
+__pycache__
