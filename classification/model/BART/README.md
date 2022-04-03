@@ -2,11 +2,11 @@
 
 ## BART(**B**idirectional and **A**uto**R**egressive **T**ransformer)
 
-![사전학습](text_infilling.PNG)
+![사전학습](img/text_infilling.PNG)
 
 Pretrained KoBART 모델을 활용하여 분류 태스크를 수행합니다. BART는 encoder-decoder 구조를 가지며 text-infilling objective로 pretraining 합니다. sequence classification 태스크에 적용하기 위해서는 아래 그림과 같이 encoder와 decoder에 동일하게 분류하고자 하는 sequence를 넣어주고, decoder의 마지막 단어의 last hidden state를 활용하여 분류합니다. 분류 layer는 `FFNN + Softmax`입니다.
 
-![바트분류](seq_classification_in_bart.PNG)
+![바트분류](img/seq_classification_in_bart.PNG)
 
 ### How to Run
 
