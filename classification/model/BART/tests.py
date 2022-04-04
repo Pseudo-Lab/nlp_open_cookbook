@@ -2,8 +2,8 @@ import pytest
 
 
 def test_evaluator_class():
-    pass 
+    pass
+
 
 def test_trainer_class():
-    pass 
-
+    pass
