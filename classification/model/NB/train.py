@@ -1,6 +1,6 @@
 import pickle
 import pandas as pd
-from konlpy.tag import Mecab
+from konlpy.tag import Mecab, Kkma, Komoran, Hannanum, Okt
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics import f1_score, precision_score, recall_score
 from sklearn.naive_bayes import MultinomialNB
@@ -8,7 +8,7 @@ from typing import Type
 
 
 def load_data(train_dir: str, test_dir: str):
-    """train and test data load
+    """load train data and test data
     Args:
         train_dir (str): _
         test_dir (str): _
@@ -30,9 +30,8 @@ def load_data(train_dir: str, test_dir: str):
     return train_x, train_y, test_x, test_y
 
 
-def pos_tagging(sentences: str):
-    mecab = Mecab()
-    pos_sentences = [" ".join(mecab.nouns(sentence)) for sentence in sentences]
+def pos_tagging(sentences: str, tagger):
+    pos_sentences = [" ".join(tagger.nouns(sentence)) for sentence in sentences]
     return pos_sentences
 
 
@@ -67,12 +66,18 @@ if __name__ == "__main__":
     train_x, train_y, test_x, test_y = load_data(train_dir, test_dir)
 
     print("2. pre processing")
-    train_x = pos_tagging(train_x)
-    test_x = pos_tagging(test_x)
+    tagger = Mecab()
+    # tagger = Okt()
+    # tagger = Komoran()
+    # tagger = Hannanum()
+
+    train_x = pos_tagging(train_x, tagger)
+    test_x = pos_tagging(test_x, tagger)
 
     print("3. text to vector")
     # vectorizer = CountVectorizer(tokenizer=custom_tokenizer, lowercase=False)
     vectorizer = TfidfVectorizer(tokenizer=custom_tokenizer, lowercase=False)
+
     train_x = vectorizer.fit_transform(train_x)
     test_x = vectorizer.transform(test_x)
 
@@ -82,6 +87,8 @@ if __name__ == "__main__":
     print("5. evaluate")
     f1, precision, recall = evaluate(model, test_x, test_y)
     print("F1 Score :", f1)
+    print("Precision :", precision)
+    print("Recall :", recall)
 
     print("6. save file")
     pickle.dump(model, open(model_dir, 'wb'))
