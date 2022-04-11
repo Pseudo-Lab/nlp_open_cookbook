@@ -1,17 +1,19 @@
 import pandas as pd
 import math
+import torch
 import numpy as np
 from torch.utils.data import RandomSampler
 from torch.utils.data import DataLoader
 from torch.nn.utils.rnn import pad_sequence
 from collections import defaultdict
 
-from torch import tensor as T
+import torch.tensor as T
 
 
 class SeqClassificationDataset:
     def __init__(self, args, data_path: str, tokenizer):
         self.args = args
+        self.device = torch.device(f"cuda:{args.device}" if args.device else "cpu")
         self.df = pd.read_csv(data_path, header=0)
         self.tokenizer = tokenizer
         self._preprocess()
@@ -46,9 +48,10 @@ class SeqClassificationDataset:
         mask = pad_sequence(
             [T(e[1]) for e in data_list], batch_first=True, padding_value=0
         )
-        y = T([e[2] for e in data_list]).unsqueeze(1)
-        _len = T([e[3] for e in data_list]).unsqueeze(1)
-        return {"input_ids": x, "attention_mask": mask, "label": y, "length": _len}
+        y = T([e[2] for e in data_list])
+        _len = T([e[3] for e in data_list])
+        ret = {"input_ids": x, "attention_mask": mask, "label": y, "length": _len}
+        return {k:v.to(self.device) for k,v in ret.items()}
 
     def get_loader(self):
         return DataLoader(
@@ -56,5 +59,5 @@ class SeqClassificationDataset:
             batch_size=self.args.batch_size,
             shuffle=True,
             drop_last=False,
-            collate_fn=self._collator,
+            collate_fn=self._collator
         )

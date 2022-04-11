@@ -17,7 +17,7 @@ class Evaluate:
         model.eval()
         ret = defaultdict(float)
         for batch in self.val_data_loader:
-            step_log = self._valid_step(batch, model)
+            step_log = self._valid_step(model, batch)
             ret["n"] += step_log["n"]
             ret["valid_loss"] += step_log["valid_batch_loss"] * step_log["n"]
             ret["n_corr"] += step_log["n_corr"]
@@ -29,7 +29,11 @@ class Evaluate:
         return ret
 
     def _valid_step(self, model, batch) -> Dict:
-        out = model(**batch)
+        out = model(
+            input_ids=batch["input_ids"],
+            attention_mask=batch["attention_mask"],
+            input_length=batch["length"],
+        )
         bsz = out.size(0)
         loss = self.loss_fn(out, batch["label"])
         n_corr = (out.max(1).indices == batch["label"]).sum()
@@ -38,4 +42,6 @@ class Evaluate:
 
     @property
     def is_best(self):
-        return self.cur_loss == self.best_loss
+        if hasattr(self, "cur_loss"):
+            return self.cur_loss == self.best_loss
+        return True
