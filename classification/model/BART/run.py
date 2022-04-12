@@ -13,7 +13,10 @@ if __name__ == "__main__":
 
     # define args
     # args = parse_args('run.py --task binary --do_eval --from_checkpoint ckpt/00000280iter_trainer.ckpt --device 3'.split())
-    args = parse_args(sys.argv)
+    args = parse_args(
+        "run.py --task binary --device 3 --batch_size 128 --lr 1e-5 --valid_every 20 --checkpoint_dir ckpt-binary".split()
+    )
+    # args = parse_args(sys.argv)
 
     # argument validation
     assert args.task in ("binary", "multi"), "task should be either 'binary' or 'multi'"

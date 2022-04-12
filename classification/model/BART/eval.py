@@ -30,7 +30,9 @@ class Evaluate:
         ans = torch.cat(ans)
         pred = torch.cat(pred)
         ret["valid_acc"] = accuracy_score(ans, pred)
-        ret["valid_f1"] = f1_score(ans, pred)
+        ret["valid_f1"] = f1_score(
+            ans, pred, average="macro" if self.args.task == "multi" else "binary"
+        )
         if self.best_loss is None or self.best_loss > ret["valid_loss"]:
             self.best_loss = ret["valid_loss"]
         self.cur_loss = ret["valid_loss"]

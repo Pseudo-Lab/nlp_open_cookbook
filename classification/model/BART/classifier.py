@@ -15,7 +15,9 @@ class BartClassifier(nn.Module):
         self.ffnn = nn.Linear(hidden_dim, num_labels)
 
     def forward(self, input_ids, attention_mask, input_length):
-        out = self.bart(input_ids=input_ids, attention_mask=attention_mask)
+        out = self.bart(
+            input_ids=input_ids[:, 1:], attention_mask=attention_mask[:, 1:]
+        )  # bos 토큰 제외
         gathered_output = torch.gather(
             out.last_hidden_state,
             dim=1,
@@ -26,5 +28,5 @@ class BartClassifier(nn.Module):
         return logit
 
     def _generate_gather_index(self, length_list: List):
-        ret = [[[_len - 1] * self.hidden_dim] for _len in length_list]
+        ret = [[[_len - 2] * self.hidden_dim] for _len in length_list]
         return T(ret).to(self.device)
