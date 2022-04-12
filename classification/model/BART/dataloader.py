@@ -51,7 +51,7 @@ class SeqClassificationDataset:
         y = T([e[2] for e in data_list])
         _len = T([e[3] for e in data_list])
         ret = {"input_ids": x, "attention_mask": mask, "label": y, "length": _len}
-        return {k:v.to(self.device) for k,v in ret.items()}
+        return {k: v.to(self.device) for k, v in ret.items()}
 
     def get_loader(self):
         return DataLoader(
@@ -59,5 +59,5 @@ class SeqClassificationDataset:
             batch_size=self.args.batch_size,
             shuffle=True,
             drop_last=False,
-            collate_fn=self._collator
+            collate_fn=self._collator,
         )

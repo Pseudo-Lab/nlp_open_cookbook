@@ -2,27 +2,35 @@ import torch
 import torch.nn as nn
 from typing import NamedTuple, Dict
 from collections import defaultdict
+from sklearn.metrics import accuracy_score, f1_score
 
 
 class Evaluate:
     """best score tracking, hold evaluation args, evaluate"""
 
-    def __init__(self, eval_args: NamedTuple, val_data_loader) -> None:
-        self.args = eval_args
+    def __init__(self, args: NamedTuple, val_data_loader) -> None:
+        self.args = args
+        self.device = torch.device(f"cuda:{args.device}" if args.device else "cpu")
         self.val_data_loader = val_data_loader
         self.best_loss = None
         self.loss_fn = nn.CrossEntropyLoss()
 
     def evaluate(self, model: nn.Module) -> Dict:
+        model = model.to(self.device)
         model.eval()
         ret = defaultdict(float)
+        ans, pred = [], []
         for batch in self.val_data_loader:
             step_log = self._valid_step(model, batch)
             ret["n"] += step_log["n"]
             ret["valid_loss"] += step_log["valid_batch_loss"] * step_log["n"]
-            ret["n_corr"] += step_log["n_corr"]
+            ans.append(step_log["answer"])
+            pred.append(step_log["pred"])
         ret["valid_loss"] /= ret["n"]
-        ret["valid_acc"] = ret["n_corr"] / ret["n"]
+        ans = torch.cat(ans)
+        pred = torch.cat(pred)
+        ret["valid_acc"] = accuracy_score(ans, pred)
+        ret["valid_f1"] = f1_score(ans, pred)
         if self.best_loss is None or self.best_loss > ret["valid_loss"]:
             self.best_loss = ret["valid_loss"]
         self.cur_loss = ret["valid_loss"]
@@ -36,9 +44,13 @@ class Evaluate:
         )
         bsz = out.size(0)
         loss = self.loss_fn(out, batch["label"])
-        n_corr = (out.max(1).indices == batch["label"]).sum()
         _loss = loss.detach().cpu().item()
-        return {"n": bsz, "valid_batch_loss": _loss, "n_corr": n_corr}
+        return {
+            "n": bsz,
+            "valid_batch_loss": _loss,
+            "answer": batch["label"].detach().cpu(),
+            "pred": out.max(1).indices.cpu(),
+        }
 
     @property
     def is_best(self):
