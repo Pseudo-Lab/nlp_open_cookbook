@@ -36,7 +36,7 @@ class PreprocessorforHF(object):
             examples.append(SingleData(i, text, label))
         return examples
 
-    def get_label_info(self, df):
+    def get_label_info(self, df = None):
         """ get label list and label_to_int dictionary """
 
         if df is None:
@@ -55,7 +55,7 @@ class PreprocessorforHF(object):
         logger.info("Using label list {} for Classification".format(label_list))
 
         labels = [lb2int[single_data.label] for single_data in reorg_data]
-        print([single_data.text for single_data in reorg_data][:3])
+        
         batch_encoding = tokenizer.batch_encode_plus(
             [single_data.text for single_data in reorg_data],
             max_length=max_length,
