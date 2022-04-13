@@ -21,7 +21,7 @@ class Trainer:
         self.model = model.to(self.device)
 
         self.evaluator = Evaluate(args, self.val_data_loader)  # init evaluator
-        self.optimizer = torch.optim.Adam(
+        self.optimizer = torch.optim.AdamW(
             self.model.parameters(),
             lr=self.args.lr,
             betas=self.args.betas,

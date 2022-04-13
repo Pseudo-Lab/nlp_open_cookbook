@@ -28,7 +28,9 @@ class SeqClassificationDataset:
             truncation=True,
             return_length=True,
         )
-        self.labels = self.df.label.unique().tolist()
+        self.labels = sorted(
+            self.df.label.unique().tolist()
+        )  # 학습 및 test의 label 순서 동일하게 하기 위해 정렬
         self.dataset = [
             (txt, attn_mask, self.labels.index(label), length)
             for txt, attn_mask, label, length in zip(
