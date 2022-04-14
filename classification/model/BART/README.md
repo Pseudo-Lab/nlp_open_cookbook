@@ -60,18 +60,20 @@ python run.py --device 0 --do_eval --task binary --batch_size 16 --from_checkpoi
 ```
 dropping 1 samples due to nan values...
 dropping 0 samples due to nan values...
-loading from ckpt/00000280iter_trainer.ckpt
+loading from ckpt-binary/00000280iter_trainer.ckpt
 Evaluation | loss=0.362, acc=0.842, f1=0.839
 ```
+
 
 ### Dataset
 
 - NSMC : 영화리뷰가 긍정적(0)인지 부정적(1)인지 분류합니다.
 - KLUE-tc : KLUE benchmark의 일부로 뉴스 타이틀을 보고 주제를 분류합니다.
 
-### Note
+### Benchmark
 
-- [kobart 공식 github](https://github.com/SKT-AI/KoBART#classification-or-regression)에 나오는 NSMC 성능은 90.2%입니다. 따라서 하이퍼파라미터 튜닝 및 몇 가지 tweak을 적용하여 개선의 여지가 있습니다. 
+- NSMC : [kobart 공식 github](https://github.com/SKT-AI/KoBART#classification-or-regression)에 나오는 성능은 90.2%입니다. 현재 dev set 성능은 84.2%이고 하이퍼파라미터 튜닝 및 몇 가지 tweak을 적용하여 개선의 여지가 있습니다. 
+- KLUE-tc : klue leaderboard를 보면 test set에서 최고 성능이 Macro F1 기준 86.05%입니다. 이 리포의 bart classifier는 dev set 기준으로 86.8%가 나오고 있습니다.
 
 
 
