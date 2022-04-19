@@ -55,15 +55,9 @@ class HFPreprocessor(object):
         self.label_list = df['label'].unique().tolist()
         return self.label_list, self.lb2int
 
-    def convert_data_to_features(self, reorg_data:List, tokenizer, max_length, df, mode:str) -> List[SingleFeature]:
-        if mode != 'train':
-            df = None
+    def convert_data_to_features(self, reorg_data:List, tokenizer, max_length) -> List[SingleFeature]:
 
-        label_list, lb2int = self.get_label_info(df)
-
-        logger.info("Using label list {} for Classification".format(label_list))
-
-        labels = [lb2int[single_data.label] for single_data in reorg_data]
+        labels = [self.lb2int[single_data.label] for single_data in reorg_data]
         
         batch_encoding = tokenizer.batch_encode_plus(
             [single_data.text for single_data in reorg_data],
