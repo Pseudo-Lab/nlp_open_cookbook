@@ -26,6 +26,15 @@ class PreprocessorforHF(object):
         self.label_list = None
         self.lb2int = None
 
+    def generate_file_path(self, args, name, mode):
+        path = os.path.join(
+        args.data_dir,
+        name.format(
+            str(args.task), mode, list(filter(None, args.model_name_or_path.split("/"))).pop(), str(args.max_seq_len)
+            ),
+        )
+        return path
+
     def _reorganize_data(self, df) -> List[SingleData]:
         """ Parse single DataFrame row to SingleData Type : id, text, label """
         examples = []
