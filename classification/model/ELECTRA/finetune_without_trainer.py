@@ -5,6 +5,7 @@ import os
 import glob
 import re
 import time
+from datetime import datetime
 
 import pandas as pd
 import numpy as np
@@ -241,8 +242,11 @@ def main(cli_args):
     init_logger()
 
     logger.info("Training/evaluation parameters {}".format(args))
-    args.output_dir = f"{cli_args.task}_SD{args.seed}-{args.output_dir}"
-    args.output_dir = os.path.join(args.ckpt_dir, args.output_dir)
+
+    now = datetime.now().strftime('%y%m%d%H%M') # 연월일시분
+
+    under_ckpt_dir = f"{args.task}_SD{args.seed}-{args.output_dir}-{now}"
+    args.output_dir = os.path.join(args.ckpt_dir, under_ckpt_dir)
     
     # GPU or CPU
     args.device = "cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu"
@@ -323,7 +327,8 @@ def main(cli_args):
                 print('output_dir made:', results_dir)
                 os.makedirs(results_dir)
 
-            output_eval_trainset_file = os.path.join(args.save_results, f"{args.task}_SD{args.seed}_test_results.txt")
+            now = datetime.now().strftime('%y%m%d%H%M')
+            output_eval_trainset_file = os.path.join(args.save_results, f"{args.task}_SD{args.seed}_test_results_{now}.txt")
             save_results(test_result, output_eval_trainset_file, len(checkpoints))
     
 
