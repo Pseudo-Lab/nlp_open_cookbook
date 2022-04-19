@@ -75,6 +75,7 @@ def train(args,
         {'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
     ]
     optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
+
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=int(t_total * args.warmup_proportion), num_training_steps=t_total)
     early_stopping = EarlyStopping(args.es_patience, args.es_min_delta)
 
@@ -110,8 +111,7 @@ def train(args,
                 "attention_mask": batch[1],
                 "labels": batch[3]
             }
-            if args.model_type not in ["distilkobert", "xlm-roberta"]:
-                inputs["token_type_ids"] = batch[2]  # Distilkobert, XLM-Roberta don't use segment_ids
+            
             outputs = model(**inputs)
             loss = outputs[0]
 
@@ -146,6 +146,7 @@ def train(args,
                 # Save model checkpoint
                 output_dir = os.path.join(args.output_dir, f"ckpt-ep{epoch}-gs{global_step}-scr{results[args.es_metric]:.4f}-vls{results['val_loss']:.4f}")
                 print('output_dir:', output_dir)
+
                 if not os.path.exists(output_dir):
                     print('output_dir made:', output_dir)
                     os.makedirs(output_dir)
@@ -186,8 +187,7 @@ def evaluate(args, model, eval_dataset, mode, global_step=None):
     else:
         logger.info(f"***** Running evaluation on {mode} dataset *****")
     
-    #logger.info("  Num examples = {}".format(len(eval_dataset)))
-    logger.info(f"  Num examples = {len(eval_sampler.indices) if eval_sampler else len(eval_dataset)}")
+    logger.info(f"  Num examples = {len(eval_dataset)}")
     logger.info(f"  Eval Batch size = {args.eval_batch_size}")
     eval_loss = 0.0
     nb_eval_steps = 0
@@ -236,7 +236,6 @@ def evaluate(args, model, eval_dataset, mode, global_step=None):
 def main(cli_args):
     # Read from config file and make args
     with open(os.path.join(os.path.dirname(__file__), cli_args.config_dir, cli_args.config_file)) as f:
-    # with open(cli_args.config_file) as f:
         args = AttrDict(json.load(f))   
 
     init_logger()
@@ -262,6 +261,7 @@ def main(cli_args):
 
     processor = HFPreprocessor(args)
     train_dataset = processor.load_and_cache(args, tokenizer, train_df, "train")
+    # dev_dataset = processor.load_and_cache(args, tokenizer, train_df, "dev")
     dev_dataset = None
     test_dataset = processor.load_and_cache(args, tokenizer, test_df, "test")
     
@@ -341,5 +341,3 @@ if __name__ == '__main__':
     cli_args = cli_parser.parse_args()
 
     main(cli_args)
-
-# python finetune_without_trainer.py --task binary
