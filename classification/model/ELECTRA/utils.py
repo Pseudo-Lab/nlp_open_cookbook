@@ -36,7 +36,6 @@ def acc_score(labels, preds):
         "acc": simple_accuracy(labels, preds),
     }
 
-
 def f1_score(labels, preds):
     return {
             "macro_f1": sklearn_metrics.f1_score(labels, preds, average='macro'),
@@ -52,23 +51,9 @@ def f1_pre_rec(labels, preds, is_ner=True):
         }
 
 
-def compute_metrics(task_name, labels, preds):
+def compute_metrics(metric, labels, preds):
     assert len(preds) == len(labels)
-    if task_name == "spend":
+    if metric == "acc":
+        return acc_score(labels, preds)
+    if metric == "f1":
         return f1_score(labels, preds)
-    if task_name == "kornli":
-        return acc_score(labels, preds)
-    elif task_name == "nsmc":
-        return acc_score(labels, preds)
-    elif task_name == "paws":
-        return acc_score(labels, preds)
-    elif task_name == "korsts":
-        return pearson_and_spearman(labels, preds)
-    elif task_name == "question-pair":
-        return acc_score(labels, preds)
-    elif task_name == "naver-ner":
-        return f1_pre_rec(labels, preds, is_ner=True)
-    elif task_name == "hate-speech":
-        return f1_pre_rec(labels, preds, is_ner=False)
-    else:
-        raise KeyError(task_name)
