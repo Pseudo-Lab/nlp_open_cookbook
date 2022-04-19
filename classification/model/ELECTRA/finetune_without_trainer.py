@@ -221,11 +221,14 @@ def evaluate(args, model, eval_dataset, mode, global_step=None, n_fold=None, eva
     eval_loss = eval_loss / nb_eval_steps
     preds = np.argmax(preds, axis=1)
 
-    result = compute_metrics(args.task, out_label_ids, preds)
-    results.update(result)
+    acc = compute_metrics('acc', out_label_ids, preds)
+    f1 = compute_metrics('f1', out_label_ids, preds)
+    
+    results.update(acc)
+    results.update(f1)
 
-    if mode=='dev':
-      results['Val_loss'] = eval_loss
+    # if mode=='dev':
+    results['val_loss'] = eval_loss
 
     return results
 
