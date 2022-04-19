@@ -324,7 +324,7 @@ def main(cli_args):
 
 if __name__ == '__main__':
     cli_parser = argparse.ArgumentParser()
-    cli_parser.add_argument('--task', type=str, choices = ['binary', 'multi'])
+    cli_parser.add_argument('--task', type=str, choices = ['nsmc', 'ynat'])
     cli_parser.add_argument("--config_dir", type=str, default="config")
     cli_parser.add_argument("--config_file", type=str, default = 'koelectra-base-v3.json')
 
