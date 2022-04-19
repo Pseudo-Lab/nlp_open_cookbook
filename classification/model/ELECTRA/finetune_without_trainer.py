@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from transformers import ElectraConfig, ElectraTokenizer, ElectraForSequenceClassification, AdamW, get_linear_schedule_with_warmup
 
 from utils import init_logger, set_seed, compute_metrics
-from preprocess import PreprocessorforHF
+from preprocess import HFPreprocessor
 from callbacks import EarlyStopping
 
 from typing import Dict
@@ -260,7 +260,7 @@ def main(cli_args):
         do_lower_case=args.do_lower_case
     )
 
-    processor = PreprocessorforHF(args)
+    processor = HFPreprocessor(args)
     train_dataset = processor.load_and_cache(args, tokenizer, train_df, "train")
     dev_dataset = None
     test_dataset = processor.load_and_cache(args, tokenizer, test_df, "test")
