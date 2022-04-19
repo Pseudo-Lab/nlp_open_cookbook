@@ -235,7 +235,7 @@ def evaluate(args, model, eval_dataset, mode, global_step=None):
 
 def main(cli_args):
     # Read from config file and make args
-    with open(os.path.join(os.path.dirname(__file__), cli_args.config_dir, cli_args.config_file)) as f:
+    with open(os.path.join(os.path.dirname(__file__), cli_args.config_dir, cli_args.task, cli_args.config_file)) as f:
         args = AttrDict(json.load(f))   
 
     init_logger()
