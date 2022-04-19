@@ -286,9 +286,10 @@ def main(cli_args):
     if args.do_eval:
         checkpoints = list(os.path.dirname(c) for c in
                         sorted(glob.glob(args.output_dir + "/**/" + "pytorch_model.bin", recursive=True),
-                                key=lambda path_with_step: list(map(int, re.findall(r"\d+", path_with_step)))[-1],
+                                key=lambda path_with_step: list(map(int, re.findall(r"\d+", path_with_step)))[-2],
                                 reverse=True
                                 ))
+
         if not args.eval_all_checkpoints:
             checkpoints = checkpoints[-1:]
         else:
@@ -299,14 +300,15 @@ def main(cli_args):
         test_results = {}
 
         for checkpoint in checkpoints:
-            global_step = checkpoint.split("-")[-2]
-            global_epoch = checkpoint.split("-")[-2]
+            global_epoch = checkpoint.split("-")[-4].replace('ep','')
+            global_step = checkpoint.split("-")[-3].replace('gs','')
+
             model = ElectraForSequenceClassification.from_pretrained(checkpoint)
             model.to(args.device)
             
-            test_result = evaluate(args, model, test_dataset, "best_val", global_step, epoch=epoch)
+            test_result = evaluate(args, model, test_dataset, "test", global_step)
 
-            test_result = dict((k + f"_{global_epoch}_{global_step}", v) for k, v in test_result.items())
+            test_result = dict((k + f"_ep{global_epoch}_gs{global_step}", v) for k, v in test_result.items())
 
             test_results.update(test_result)
         
