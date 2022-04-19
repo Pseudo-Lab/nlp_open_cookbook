@@ -144,7 +144,7 @@ def train(args,
                 logger.info('Saving best models...')
 
                 # Save model checkpoint
-                output_dir = os.path.join(args.output_dir, f"checkpoint-ep{epoch}-{global_step}-sc{results['micro_f1']:.4f}-vls{val_loss:.4f}")
+                output_dir = os.path.join(args.output_dir, f"ckpt-ep{epoch}-gs{global_step}-scr{results[args.es_metric]:.4f}-vls{results['val_loss']:.4f}")
                 print('output_dir:', output_dir)
                 if not os.path.exists(output_dir):
                     print('output_dir made:', output_dir)
