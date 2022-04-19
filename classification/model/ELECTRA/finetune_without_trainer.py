@@ -75,7 +75,7 @@ def train(args,
     ]
     optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=int(t_total * args.warmup_proportion), num_training_steps=t_total)
-    early_stopping = EarlyStopping()
+    early_stopping = EarlyStopping(args.es_patience, args.es_min_delta)
 
     if os.path.isfile(os.path.join(args.model_name_or_path, "optimizer.pt")) and os.path.isfile(
             os.path.join(args.model_name_or_path, "scheduler.pt")
@@ -96,7 +96,7 @@ def train(args,
 
     global_step = 0
     tr_loss = 0.0
-    best_val_metric = 999999.0
+    best_val_metric = (0 if 'loss' not in args.es_metric else np.inf)
 
     mb = master_bar(range(int(args.num_train_epochs)))
     for epoch in mb:
@@ -134,12 +134,12 @@ def train(args,
             if args.evaluate_test_during_training:
                 results = evaluate(args, model, test_dataset, "test", global_step)
             else:
-                results = evaluate(args, model, train_dataset, "dev", global_step, eval_sampler=val_sampler, epoch=epoch)
+                results = evaluate(args, model, dev_dataset, "dev", global_step)
             
-            val_loss = results["Val_loss"]
-
-            if val_loss < best_val_metric:
-                best_val_metric = val_loss
+            es_val = results[args.es_metric] * (-1 if 'loss' not in args.es_metric else 1)
+            
+            if es_val < best_val_metric:
+                best_val_metric = es_val
                 logger.info('Saving best models...')
 
                 # Save model checkpoint
@@ -164,9 +164,10 @@ def train(args,
             if args.max_steps > 0 and global_step > args.max_steps:
                 break
 
-        early_stopping(val_loss)
-        if early_stopping.early_stop:
-            break
+        if args.earlystopping:
+            early_stopping(es_val)
+            if early_stopping.early_stop:
+                break
 
         mb.write("Epoch {} done".format(epoch + 1))
 
