@@ -20,7 +20,7 @@ class SingleFeature:
     token_type_ids: torch.tensor
     label: int
 
-class PreprocessorforHF(object):
+class HFPreprocessor(object):
     def __init__(self, args):
         self.args = args
         self.label_list = None
