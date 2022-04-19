@@ -86,22 +86,32 @@ class PreprocessorforHF(object):
     def load_and_cache(self, args, tokenizer, df, mode):
 
         # Load data features from cache or dataset file
-        cached_features_file = os.path.join(
-            args.data_dir,
-            "cached_{}_{}_{}".format(
-                str(args.task), list(filter(None, args.model_name_or_path.split("/"))).pop(), str(args.max_seq_len)
-            ),
-        )
-        if os.path.exists(cached_features_file):
-            logger.info("Loading features from cached file %s", cached_features_file)
-            features = torch.load(cached_features_file)
+        feature_name = "cached_{}_{}_{}_{}"
+        label_list_name, lb2int_name = feature_name+"_label_list", feature_name+"_lb2int"
+        
+        cached_features_fname = self.generate_file_path(args, feature_name, mode)
+        cached_label_list_fname = self.generate_file_path(args, label_list_name, 'train') # use train labels
+        cached_lb2int_fname = self.generate_file_path(args, lb2int_name, 'train')
+
+        if os.path.exists(cached_features_fname):
+            logger.info("Loading features from cached file %s", cached_features_fname)
+            features = torch.load(cached_features_fname)
+            self.label_list, self.lb2int = torch.load(cached_label_list_fname), torch.load(cached_lb2int_fname)
         else:
             logger.info("Creating features from dataset file at %s", args.data_dir)
             reorg_data = self._reorganize_data(df)
-            features = self.convert_data_to_features(reorg_data, tokenizer, args.max_seq_len, df, mode)
-            logger.info("Saving features into cached file %s", cached_features_file)
-            torch.save(features, cached_features_file)
 
+            if mode=='train':
+                self.label_list, self.lb2int = self.get_label_info(df)
+                torch.save(self.label_list, cached_label_list_fname)
+                torch.save(self.lb2int, cached_lb2int_fname)
+
+            logger.info("Using label list {} for Classification".format(self.label_list))
+
+            features = self.convert_data_to_features(reorg_data, tokenizer, args.max_seq_len)
+            logger.info("Saving features into cached file %s", cached_features_fname)
+            torch.save(features, cached_features_fname)
+                
         # Convert to Tensors and build dataset
         all_input_ids = torch.tensor([f.input_ids for f in features], dtype=torch.long)
         all_attention_mask = torch.tensor([f.attention_mask for f in features], dtype=torch.long)
