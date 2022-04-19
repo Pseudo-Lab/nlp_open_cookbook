@@ -23,10 +23,20 @@ from typing import Dict
 logger = logging.getLogger(__name__)
 
 def load_data(args):
-    train_df = pd.read_csv(args.data_paths["train"])
-    test_df = pd.read_csv(args.data_paths["test"])
+    if args.task == 'nsmc':
+        data_paths = {"train": f"../../data/train_binary.csv",
+                        "test": f"../../data/test_binary.csv",}
+    elif args.task == 'ynat':
+        data_paths = {"train": f"../../data/train_multi.csv",
+                    "test": f"../../data/test_multi.csv",}
+
+    train_df = pd.read_csv(data_paths["train"])
+    test_df = pd.read_csv(data_paths["test"])
 
     train_df, test_df = train_df[train_df['text'].notnull()], test_df[test_df['text'].notnull()]
+
+    print('train data sample :', train_df.head(1))
+    print('test data sample :', test_df.head(1))
     return train_df, test_df
 
 def save_results(results, path, len_ckpt=1):
@@ -318,9 +328,6 @@ if __name__ == '__main__':
     cli_parser.add_argument("--config_file", type=str, default = 'koelectra-base-v3.json')
 
     cli_args = cli_parser.parse_args()
-
-    cli_args.data_paths = {"train": f"../../data/train_{cli_args.task}.csv",
-                            "test": f"../../data/test_{cli_args.task}.csv",}
 
     main(cli_args)
 
