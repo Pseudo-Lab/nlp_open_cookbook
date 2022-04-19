@@ -56,7 +56,7 @@ def train(args,
           model,
           train_dataset,
           dev_dataset=None,
-          test_dataset=None, train_sampler=None, val_sampler=None):
+          test_dataset=None ):
     
     train_sampler = RandomSampler(train_dataset)
     train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.train_batch_size, num_workers=4, pin_memory=True)
@@ -174,7 +174,7 @@ def train(args,
 
     return global_step, tr_loss / global_step, epoch
 
-def evaluate(args, model, eval_dataset, mode, global_step=None, n_fold=None, eval_sampler = None, save_pred = None, epoch=None):
+def evaluate(args, model, eval_dataset, mode, global_step=None):
     results = {}
 
     eval_sampler = SequentialSampler(eval_dataset)
@@ -251,7 +251,7 @@ def main(cli_args):
     # GPU or CPU
     args.device = "cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu"
 
-    train_df, test_df = load_data(cli_args)
+    train_df, test_df = load_data(args)
 
     set_seed(args)
 
@@ -270,8 +270,8 @@ def main(cli_args):
     config = ElectraConfig.from_pretrained(
         args.model_name_or_path,
         num_labels = len(label_list),
-        id2label = {label_id: label for label, label_id in lb2int.item()},
-        label2id = lb2int,
+        id2label = {label_id: str(label) for label, label_id in lb2int.items()},
+        label2id = {str(label): label_id for label, label_id in lb2int.items()},
     )
 
     if dev_dataset == None:
@@ -285,7 +285,7 @@ def main(cli_args):
         model.to(args.device)
         
         start_time = time.time()
-        global_step, tr_loss, epoch = train(args, model, train_dataset)
+        global_step, tr_loss, epoch = train(args, model, train_dataset, dev_dataset, test_dataset)
         train_time = time.strftime("%H:%M:%S", time.gmtime(time.time()-start_time))
         
         logger.info(f"epoch = {epoch}, global_step = {global_step}, average loss = {tr_loss}")
