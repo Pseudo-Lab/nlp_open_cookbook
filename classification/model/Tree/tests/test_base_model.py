@@ -2,6 +2,8 @@ import pytest
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+
 
 class BaseModel:
     def __init__(self):
@@ -9,16 +11,6 @@ class BaseModel:
 
     def predict(self, data):
         return '긍정'
-
-class LogisticRegressionModel(BaseModel):
-    def __init__(self):
-        self.model = LogisticRegression()
-
-    def train(self, X, y):
-        self.model.fit(X, y)
-
-    def predict(self, X):
-        return ['긍정' if pd else '부정' for pd in self.model.predict(X) if pd]
 
 
 class TestBaseModel:
@@ -34,7 +26,7 @@ class TestBaseModel:
         print("BaseModel accuracy:", accuracy)
         assert accuracy >= 0.5
 
-    def test_logistic_regressino(self, bn_train_data, bn_test_data, accuracy_dict):
+    def test_logistic_regression(self, bn_train_data, bn_test_data, accuracy_dict):
         train_x = bn_train_data['text']
         train_y = bn_train_data['label']
 
@@ -49,5 +41,24 @@ class TestBaseModel:
         lr.fit(train_x_emb, train_y)
         predict = lr.predict(test_x_emb)
         accuracy = sum(predict == test_y) / len(test_y)
+        accuracy_dict['logistic_regression'] = accuracy
         print("LogisticRegression accuracy:", accuracy) 
         assert accuracy >= accuracy_dict['base_model']  # 0.7665
+
+    def test_decison_tree(self, bn_train_data, bn_test_data, accuracy_dict):
+        train_x = bn_train_data['text']
+        train_y = bn_train_data['label']
+
+        test_x = bn_test_data['text']
+        test_y = bn_test_data['label']
+
+        bow = CountVectorizer()
+        train_x_emb = bow.fit_transform(train_x)
+        test_x_emb = bow.transform(test_x)
+
+        dt = DecisionTreeClassifier()
+        dt.fit(train_x_emb, train_y)
+        predict = dt.predict(test_x_emb)
+        accuracy = sum(predict == test_y) / len(test_y)
+        print("DecisionTree accuracy:", accuracy) 
+        assert accuracy >= accuracy_dict['logistic_regression']
