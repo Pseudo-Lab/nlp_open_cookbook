@@ -5,24 +5,18 @@ import sys
 from dataloader import SeqClassificationDataset
 from trainer import Trainer
 from classifier import BartClassifier
-from config import parse_args
+# from config import parse_args
 from eval import Evaluate
 
+import json
+from utils import dotdict
 
 if __name__ == "__main__":
 
-    # define args
-    # args = parse_args('run.py --task binary --do_eval --from_checkpoint ckpt/00000280iter_trainer.ckpt --device 3'.split())
-    # args = parse_args(
-    #     "run.py --task binary --device 3 --batch_size 128 --lr 1e-5 --valid_every 20 --checkpoint_dir ckpt-binary".split()
-    # )
-    args = parse_args(
-        "run.py --task binary --device 0 --batch_size 256 --lr 1e-5 --valid_every 10 --checkpoint_dir ckpt-binary-adamw".split()
-    )
-    # args = parse_args(sys.argv)
-
-    # argument validation
-    assert args.task in ("binary", "multi"), "task should be either 'binary' or 'multi'"
+    # load config
+    with open(f"config/{sys.argv[1]}/config.json",'rt') as f:
+        args = json.load(f)
+    args = dotdict(args)
 
     # load tokenizer and data
     tokenizer = PreTrainedTokenizerFast.from_pretrained("hyunwoongko/kobart")
