@@ -1,0 +1,1 @@
+from data import read_txt
