@@ -15,24 +15,22 @@ import torch
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from transformers import ElectraConfig, ElectraTokenizer, ElectraForSequenceClassification, AdamW, get_linear_schedule_with_warmup
 
-from utils import init_logger, set_seed, compute_metrics
+from utils import init_logger, set_seed, compute_metrics, read_txt
 from preprocess import HFPreprocessor
 from callbacks import EarlyStopping
-
-from typing import Dict
 
 logger = logging.getLogger(__name__)
 
 def load_data(args):
     if args.task == 'nsmc':
-        data_paths = {"train": f"../../data/train_binary.csv",
-                        "test": f"../../data/test_binary.csv",}
+        data_paths = {"train": f"../../data/ratings_train.txt",
+                        "test": f"../../data/ratings_test.txt",}
     elif args.task == 'ynat':
         data_paths = {"train": f"../../data/train_multi.csv",
                     "test": f"../../data/test_multi.csv",}
 
-    train_df = pd.read_csv(data_paths["train"])
-    test_df = pd.read_csv(data_paths["test"])
+    train_df = read_txt(data_paths["train"])
+    test_df = read_txt(data_paths["test"])
 
     train_df, test_df = train_df[train_df['text'].notnull()], test_df[test_df['text'].notnull()]
 
