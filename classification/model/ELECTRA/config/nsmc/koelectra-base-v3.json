@@ -11,7 +11,7 @@
 "do_train": true,
 "do_eval": true,
 "max_seq_len": 128,
-"earlystopping": false,
+"earlystopping": true,
 "es_metric": "acc",
 "es_patience": 5,
 "es_min_delta": 0,
