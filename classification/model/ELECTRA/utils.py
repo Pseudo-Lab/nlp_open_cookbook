@@ -1,12 +1,15 @@
 import random
 import logging
+from attrdict import AttrDict
 
 import torch
 import numpy as np
+import pandas as pd
 import sys
 
-from sklearn import metrics as sklearn_metrics
+from sklearn import metrics as sklearn_metrics, utils
 import os
+
 
 def init_logger():
     logging.basicConfig(
@@ -17,7 +20,6 @@ def init_logger():
         #stream=sys.stdout
     )
 
-# seed 고정
 def set_seed(args):
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -27,6 +29,39 @@ def set_seed(args):
     torch.cuda.manual_seed_all(args.seed) # if use multi-GPU
     torch.backends.cudnn.deterministic = True  # type: ignore
     torch.backends.cudnn.benchmark = True  # type: ignore
+
+def read_txt(filepath):
+    with open(filepath, "r", encoding="utf-8") as f:
+        lines = []
+        for line in f:
+            lines.append(line.strip())
+
+    texts, labels = [], []
+    for (i, line) in enumerate(lines[1:]):
+        line = line.split("\t")
+        text_a = line[1]
+        label = line[2]
+        texts.append(text_a)
+        labels.append(label)
+    return pd.DataFrame({'text': texts, 'label':labels})
+
+def load_data(args:AttrDict):
+    if args.task == 'nsmc':
+        data_paths = {"train": f"../../data/ratings_train.txt",
+                      "test": f"../../data/ratings_test.txt",}
+    elif args.task == 'ynat':
+        data_paths = {"train": f"../../data/train_multi.csv",
+                      "test": f"../../data/test_multi.csv",}
+
+    train_df = read_txt(data_paths["train"])
+    test_df = read_txt(data_paths["test"])
+
+    train_df, test_df = train_df[train_df['text'].notnull()], test_df[test_df['text'].notnull()]
+
+    print('train data sample :', train_df.head(1))
+    print('test data sample :', test_df.head(1))
+
+    return train_df, test_df
 
 def simple_accuracy(labels, preds):
     return (labels == preds).mean()
@@ -57,3 +92,9 @@ def compute_metrics(metric, labels, preds):
         return acc_score(labels, preds)
     if metric == "f1":
         return f1_score(labels, preds)
+
+def save_results(results, path):
+    with open(path, "w") as f_w:
+        for key in sorted(results.keys()):
+            f_w.write("{} = {}\n".format(key, str(results[key])))
+
