@@ -3,6 +3,7 @@ import logging
 
 import torch
 import numpy as np
+import pandas as pd
 import sys
 
 from sklearn import metrics as sklearn_metrics
@@ -27,6 +28,21 @@ def set_seed(args):
     torch.cuda.manual_seed_all(args.seed) # if use multi-GPU
     torch.backends.cudnn.deterministic = True  # type: ignore
     torch.backends.cudnn.benchmark = True  # type: ignore
+
+def read_txt(filepath):
+    with open(filepath, "r", encoding="utf-8") as f:
+        lines = []
+        for line in f:
+            lines.append(line.strip())
+
+    texts, labels = [], []
+    for (i, line) in enumerate(lines[1:]):
+        line = line.split("\t")
+        text_a = line[1]
+        label = line[2]
+        texts.append(text_a)
+        labels.append(label)
+    return pd.DataFrame({'text': texts, 'label':labels})
 
 def simple_accuracy(labels, preds):
     return (labels == preds).mean()
