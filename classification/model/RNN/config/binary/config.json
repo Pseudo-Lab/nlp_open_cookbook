@@ -1,0 +1,35 @@
+{
+    "dataset": {
+        "train": {
+            "file_path": "../../data/train_binary.csv",
+            "tokenizer": "kkma",
+            "vocab_size": 10000,
+            "batch_size": 4,
+            "shuffle": false
+        },
+        "val": {
+            "file_path": "../../data/test_binary.csv",
+            "tokenizer": "kkma",
+            "vocab_size": -1,
+            "batch_size": 4,
+            "shuffle": false
+        }
+    },
+    "trainer": {
+        "n_classes": 2,
+        "optimizer": "adam",
+        "lr": 1e-3,
+        "epochs": 100,
+        "embedding_size": 32,
+        "hidden_size": 64,
+        "layers": 2,
+        "scheduler": {
+            "mode": "min",
+            "factor": 0.6,
+            "patience": 20,
+            "min_lr": 1e-6
+        },
+        "valid_every": 5,
+        "checkpoint_dir": "checkpoint"
+    }
+}

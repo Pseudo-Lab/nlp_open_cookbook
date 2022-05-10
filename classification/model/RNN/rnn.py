@@ -12,9 +12,10 @@ class SimpleRNN(nn.Module):
         self.rnn = nn.RNN(input_size=embedding_dim,
                           hidden_size=self.hidden_size,
                           num_layers=self.n_layers,
-                          dropout=0.3,
                           batch_first=True)
-        self.output = nn.Linear(self.hidden_size, n_classes)
+        
+        self.feedforward = nn.Linear(self.hidden_size, self.hidden_size // 2)
+        self.output = nn.Linear(self.hidden_size // 2, n_classes)
     
     def forward(self, x):
         #initialize hidden state
@@ -23,6 +24,29 @@ class SimpleRNN(nn.Module):
         embed = self.embedding(x) # (batch_size, sequence) -> (batch_size, sequence, embedding_dim)
         out, _ = self.rnn(embed, h_0) 
         out = out[:, -1, :] # (batch_size, embedding_dim, hidden_size)
+        out = self.feedforward(out)
         out = self.output(out)
         
         return out
+    
+if __name__ == '__main__':
+    import numpy as np
+    
+    model = SimpleRNN(n_classes=2, vocab_size=10000, embedding_dim=16, n_layers=2, hidden_size=64)
+    x = [torch.tensor(np.random.randint(low=0, high=9999, size=(4, 20))) for i in range(100)]
+    y = [torch.tensor(np.random.randint(low=0, high=1, size=(4, 1)), dtype=torch.long) for i in range(100)]
+    
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+    
+    model.train()
+    
+    
+    for i in range(100):
+        for text, label in zip(x, y):
+            output = model(text)
+            loss = criterion(output, label.squeeze())
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            print(loss.detach())
