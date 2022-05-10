@@ -1,23 +1,34 @@
-import numpy as np
+import pandas as pd
+
+from src import data_dir
+
+from sklearn.feature_extraction.text import CountVectorizer
 
 class DataLoader:
-    def __init__(self, data, batch_size, shuffle=True):
-        self.data = data
-        self.batch_size = batch_size
-        self.shuffle = shuffle
-        self.reset()
 
-    def reset(self):
-        self.indices = np.arange(len(self.data))
-        if self.shuffle:
-            np.random.shuffle(self.indices)
+    def __init__(self, dataset, task):
+        #FIXME: add dataset path
+        #self.dataset_path = data_dir / dataset
+        self.dataset_path = data_dir
+        self.task = task
 
-    def __iter__(self):
-        return self
+    def _load_data(self):
+        self.train = pd.read_csv(self.dataset_path / f'train_{self.task}.csv')
+        self.test = pd.read_csv(self.dataset_path / f'test_{self.task}.csv')
 
-    def __next__(self):
-        if len(self.indices) < self.batch_size:
-            self.reset()
-        indices = self.indices[:self.batch_size]
-        self.indices = self.indices[self.batch_size:]
-        return self.data[indices]
+    def _preprocess(self, data):
+        #TODO: add preprocessing
+        return data
+
+    def _feature_embedding(self, train, test):
+        embedder = CountVectorizer()
+        X_train = embedder.fit_transform(train)
+        X_test = embedder.transform(test)
+        return X_train, X_test
+
+    def load_and_preprocess(self):
+        self._load_data()
+        train, test = list(map(self._preprocess, [self.train, self.test]))
+        X_train, X_test = self._feature_embedding(train['text'], test['text'])
+        y_train, y_test = train['label'], test['label']
+        return X_train, y_train, X_test, y_test
