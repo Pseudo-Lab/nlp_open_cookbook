@@ -5,6 +5,8 @@ from torch.utils.data import Dataset, DataLoader
 from konlpy.tag import Okt, Komoran, Kkma
 from torchtext.vocab import build_vocab_from_iterator
 
+import utils
+
 class TextDataset(Dataset):
     def __init__(self, dataset_args, vocab=None, is_train=True):
         self.args = dataset_args
@@ -22,34 +24,13 @@ class TextDataset(Dataset):
         
         self.pre_porcess()
         
-    def _get_tokenizer(self):
-        if self.tokenizer == 'kkma':
-            self.tokenizer = Kkma()
-        
-        elif self.tokenizer == 'okt':
-            self.tokenizer = Okt()
-        
-        elif self.tokenizer == 'komoran':
-            self.tokenizer = Komoran()
-    
-    def _yield_tokens(self):
-        for sentence in self.text:
-            yield self.tokenizer.nouns(sentence)
-    
-    def _set_vocab(self):
-        self.vocab = build_vocab_from_iterator(self._yield_tokens(), specials=['<unk>'], max_tokens=self.vocab_size)
-        self.vocab.set_default_index(self.vocab['<unk>'])
-    
-    def _integer_encoding(self):
-        self.text = [self.vocab(self.tokenizer.nouns(sentence)) for sentence in self.text]
-    
     def pre_porcess(self):
-        self._get_tokenizer()
+        tokenizer = utils.get_tokenizer(self.tokenizer)
         
         if self.is_train:
-            self._set_vocab()
+            vocab = utils.set_vocab(self.text, tokenizer, self.vocab_size)
         
-        self._integer_encoding()
+        self.text = utils.integer_encoding(self.text, tokenizer, vocab)
     
     def __len__(self):
         return self.length
