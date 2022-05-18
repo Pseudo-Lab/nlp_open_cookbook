@@ -34,9 +34,9 @@ class Trainer4Beginner:
                 eval_dataset:TensorDataset) -> None:
 
         self.model = model
-        self.args = args,
-        self.train_dataset = train_dataset, 
-        self.eval_dataset = eval_dataset,
+        self.args = args
+        self.train_dataset = train_dataset
+        self.eval_dataset = eval_dataset
 
     def fit(self) -> None:
 
@@ -197,18 +197,23 @@ class Trainer4Beginner:
             else:
                 preds = np.append(preds, logits.detach().cpu().numpy(), axis=0)
                 out_label_ids = np.append(out_label_ids, inputs["labels"].detach().cpu().numpy(), axis=0)
-
         
         # [Prediction Dataframe 생성]
         eval_loss = eval_loss / nb_eval_steps
-        preds = np.argmax(preds, axis=1)
+        all_probs=torch.max(
+                            F.softmax(
+                                    torch.tensor(preds, dtype=torch.float32), dim=-1
+                                     ), dim=-1
+                            )[0].numpy().tolist()
         
+        preds = np.argmax(preds, axis=1)
         all_preds=preds.tolist()    
-        all_probs=torch.max(F.softmax(torch.tensor(preds, dtype=torch.float32), dim=-1), dim=-1)[0].numpy().tolist()
         
         result_df = pd.DataFrame()
         result_df[f'prediction'] = all_preds
         result_df[f'score'] = all_probs
+
+        acc = compute_metrics('acc', out_label_ids, preds)
 
         print(f"***** Test set Accuracy : {acc:.4f} *****")
 

@@ -56,9 +56,9 @@ class Trainer4Expert:
                 ) -> None:
 
         self.model = model
-        self.args = args,
-        self.train_dataset = train_dataset, 
-        self.eval_dataset = eval_dataset,
+        self.args = args
+        self.train_dataset = train_dataset
+        self.eval_dataset = eval_dataset
         self.metrics = metrics
         self.args.evaluate_test_during_training = True if self.eval_dataset else False
 
@@ -238,10 +238,10 @@ class Trainer4Expert:
         preds = np.argmax(preds, axis=1)
 
         if hasattr(self.metrics, "__iter__"):
-            for metrics in self.metrics:
-                score_dict = compute_metrics(metrics, out_label_ids, preds)
+            for metric in self.metrics:
+                score_dict = compute_metrics(metric, out_label_ids, preds)
                 results.update(score_dict)
-                print(f"***** Evaluation set {metrics} : {score_dict.values()[0]:.4f} *****")
+                print(f"***** Evaluation set {metric} : {score_dict.values()[0]:.4f} *****")
         else:
             score_dict = compute_metrics(self.metrics, out_label_ids, preds)
             results.update(score_dict)
@@ -378,6 +378,7 @@ def main(cli_args:ArgumentParser):
                     model = model,
                     train_dataset=train_dataset, 
                     eval_dataset=test_dataset,
+                    metrics = ['acc', 'f1']
                     )
 
     trainer.fit()
