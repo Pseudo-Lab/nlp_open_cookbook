@@ -49,12 +49,19 @@ def load_data(args:AttrDict):
     if args.task == 'nsmc':
         data_paths = {"train": f"../../data/ratings_train.txt",
                       "test": f"../../data/ratings_test.txt",}
+                      
+        train_df = read_txt(data_paths["train"])
+        test_df = read_txt(data_paths["test"])
+
     elif args.task == 'ynat':
         data_paths = {"train": f"../../data/train_multi.csv",
                       "test": f"../../data/test_multi.csv",}
 
-    train_df = read_txt(data_paths["train"])
-    test_df = read_txt(data_paths["test"])
+        train_df = pd.read_csv(data_paths["train"])
+        test_df = pd.read_csv(data_paths["test"])
+
+    else:
+        raise ValueError("task should be either 'nsmc' or 'ynat'")
 
     train_df, test_df = train_df[train_df['text'].notnull()], test_df[test_df['text'].notnull()]
 
