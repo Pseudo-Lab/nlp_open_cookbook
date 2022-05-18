@@ -1,0 +1,10 @@
+name: bart-tasks
+channels:
+  - conda-forge
+  - anaconda
+dependencies:
+  - numpy
+  - pandas
+  - tqdm
+  - pytest
+  - wandb
