@@ -54,8 +54,8 @@ def load_data(args:AttrDict):
         test_df = read_txt(data_paths["test"])
 
     elif args.task == 'ynat':
-        data_paths = {"train": f"../../data/train_multi.csv",
-                      "test": f"../../data/test_multi.csv",}
+        data_paths = {"train": f"../../data/train_multi_class.csv",
+                      "test": f"../../data/test_multi_class.csv",}
 
         train_df = pd.read_csv(data_paths["train"])
         test_df = pd.read_csv(data_paths["test"])
