@@ -31,14 +31,17 @@ class Trainer4Beginner:
                 args:AttrDict, 
                 model:ElectraForSequenceClassification, 
                 train_dataset:TensorDataset, 
-                eval_dataset:TensorDataset) -> None:
+                eval_dataset:TensorDataset):
 
         self.model = model
         self.args = args
         self.train_dataset = train_dataset
         self.eval_dataset = eval_dataset
+        self.fitted = False
 
     def fit(self) -> None:
+
+        self.fitted = True
 
         # [Train set Dataloader]
         train_sampler = RandomSampler(self.train_dataset)
@@ -93,7 +96,6 @@ class Trainer4Beginner:
 
         logger.info(f"epoch = {epoch}, global_step = {global_step}, average loss = {tr_loss / global_step}")
 
-        self.fitted = True
         return 
     
     def evaluate(self) -> None:
@@ -157,15 +159,16 @@ class Trainer4Beginner:
             raise Exception(" Model should be fitted first ! ")
 
         # [Test set Dataloader]
+        test_dataset = test_dataset if test_dataset else self.test_dataset
         test_sampler = SequentialSampler(test_dataset)
-        test_dataloader = DataLoader(self.test_dataset, 
+        test_dataloader = DataLoader(test_dataset, 
                                     sampler=test_sampler, 
                                     batch_size=self.args.eval_batch_size, 
                                     num_workers=4, pin_memory=True)
 
         # [Logging]
         logger.info(f"***** Running evaluation on eval dataset *****")
-        logger.info(f"  Num examples = {len(self.test_dataset)}")
+        logger.info(f"  Num examples = {len(test_dataset)}")
         logger.info(f"  Eval Batch size = {self.args.eval_batch_size}")
 
         eval_loss = 0.0

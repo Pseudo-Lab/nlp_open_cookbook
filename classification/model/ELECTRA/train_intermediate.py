@@ -57,10 +57,12 @@ class Trainer4Intermediate:
         self.train_dataset = train_dataset
         self.eval_dataset = eval_dataset
         self.metrics = metrics
-
+        self.fitted = False
         self.args.evaluate_test_during_training = True if self.eval_dataset else False
 
     def fit(self) -> None:
+
+        self.fitted = True
 
         # [Train set Dataloader 정의]
         train_sampler = RandomSampler(self.train_dataset)
@@ -166,7 +168,6 @@ class Trainer4Intermediate:
 
         logger.info(f"epoch = {epoch}, global_step = {global_step}, average loss = {tr_loss / global_step}")
 
-        self.fitted = True
         return 
     
     def evaluate(self, save_scores=False) -> None:
@@ -183,7 +184,7 @@ class Trainer4Intermediate:
 
         # [Logging]
         logger.info(f"***** Running evaluation on eval dataset *****")
-        logger.info(f"  Num examples = {len(self.test_dataset)}")
+        logger.info(f"  Num examples = {len(self.eval_dataset)}")
         logger.info(f"  Eval Batch size = {self.args.eval_batch_size}")
 
         eval_loss = 0.0
@@ -225,11 +226,11 @@ class Trainer4Intermediate:
             for metric in self.metrics:
                 score_dict = compute_metrics(metric, out_label_ids, preds)
                 results.update(score_dict)
-                print(f"***** Evaluation set {metric} : {score_dict.values()[0]:.4f} *****")
+                print(f"***** Evaluation set {metric} : {list(score_dict.values())[0]:.4f} *****")
         else:
             score_dict = compute_metrics(self.metrics, out_label_ids, preds)
             results.update(score_dict)
-            print(f"***** Evaluation set {self.metrics} : {score_dict.values()[0]:.4f} *****")
+            print(f"***** Evaluation set {self.metrics} : {list(score_dict.values())[0]:.4f} *****")
 
         results['val_loss'] = eval_loss
 
@@ -251,15 +252,16 @@ class Trainer4Intermediate:
             raise Exception(" Model should be fitted first ! ")
 
         # [Test set Dataloader 정의]
+        test_dataset = test_dataset if test_dataset else self.test_dataset
         test_sampler = SequentialSampler(test_dataset)
-        test_dataloader = DataLoader(self.test_dataset, 
+        test_dataloader = DataLoader(test_dataset, 
                                     sampler=test_sampler, 
                                     batch_size=self.args.eval_batch_size, 
                                     num_workers=4, pin_memory=True)
 
         # [Logging]
         logger.info(f"***** Running evaluation on eval dataset *****")
-        logger.info(f"  Num examples = {len(self.test_dataset)}")
+        logger.info(f"  Num examples = {len(test_dataset)}")
         logger.info(f"  Eval Batch size = {self.args.eval_batch_size}")
 
         eval_loss = 0.0
@@ -293,7 +295,6 @@ class Trainer4Intermediate:
                 out_label_ids = np.append(out_label_ids, inputs["labels"].detach().cpu().numpy(), axis=0)
 
         # [Prediction Dataframe 생성]
-
         eval_loss = eval_loss / nb_eval_steps
         preds = np.argmax(preds, axis=1)
         
