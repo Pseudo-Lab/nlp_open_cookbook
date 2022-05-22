@@ -18,7 +18,7 @@ def load_data(train_dir: str, test_dir: str):
     df_train = pd.read_csv(train_dir)
     df_train = df_train.dropna()
 
-    df_train, df_val = train_test_split(df_train, test_size=0.1)
+    df_train, df_val = train_test_split(df_train, test_size=0.2)
     
     train_x, train_y = df_train["문장"].tolist(), []
     for i in range(0, len(df_train)):
@@ -38,12 +38,6 @@ def load_data(train_dir: str, test_dir: str):
     return train_x, train_y, val_x, val_y, test_x, test_y
 
 
-def calculate_accuracy(x, y):
-    max_vals, max_indices = torch.max(x, 1)
-    train_acc = (max_indices == y).sum().data.cpu().numpy() / max_indices.size()[0]
-    return train_acc
-
-
 def train(model, train_loader, val_loader, epoch, optimizer, loss_fn):
     best_loss = np.Inf
     for i in range(epoch):
@@ -51,9 +45,9 @@ def train(model, train_loader, val_loader, epoch, optimizer, loss_fn):
 
         model.train()
         for batch_id, (token_ids, valid_length, segment_ids, label) in enumerate(train_loader):
-            optimizer.zero_grad()
             pred_y = model(token_ids.long().to(device), valid_length, segment_ids.long().to(device))
-            y = label.long().to(device, dtype = torch.float)
+            y = label.long().to(device, dtype=torch.float)
+            optimizer.zero_grad()
             loss = loss_fn(pred_y, y)
             loss.backward()
             optimizer.step()
@@ -109,9 +103,9 @@ if __name__ == "__main__":
     device = torch.device("cuda")
 
     # Hyper Parameter
-    epoch = 2
-    max_len = 10
-    batch_size = 128
+    epoch = 3
+    max_len = 100
+    batch_size = 16
     max_grad_norm = 1
     warmup_ratio = 0.1
     log_interval = 200
