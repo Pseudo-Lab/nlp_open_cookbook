@@ -9,7 +9,7 @@ class Evaluate:
     def __init__(self, val_dataloader):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.val_dataloader = val_dataloader
-        self.best_loss = None
+        self.best_acc = None
         self.criterion = nn.CrossEntropyLoss()
     
     def _val_step(self, model, batch):
@@ -38,14 +38,14 @@ class Evaluate:
         ret['val_acc'] = accuracy_score(ans, pred)
         ret['val_f1'] = f1_score(ans, pred)
         
-        if self.best_loss is None or self.best_loss > ret['val_loss']:
-            self.best_loss = ret['val_loss']
-        self.cur_loss = ret['val_loss']
+        if self.best_acc is None or self.best_acc < ret['val_loss']:
+            self.best_acc = ret['val_acc']
+        self.cur_acc = ret['val_acc']
         return ret
 
     @property
     def is_best(self):
-        if hasattr(self, 'cur_loss'):
-            return self.cur_loss == self.best_loss
+        if hasattr(self, 'cur_acc'):
+            return self.cur_acc == self.best_acc
         return True
             

@@ -8,10 +8,9 @@ from torchtext.vocab import build_vocab_from_iterator
 import utils
 
 class TextDataset(Dataset):
-    def __init__(self, dataset_args, vocab=None, is_train=True):
+    def __init__(self, dataset_args, is_train=True):
         self.args = dataset_args
         self.is_train = is_train
-        self.vocab = vocab
         
         df = pd.read_csv(self.args['file_path'])
         df = df.dropna()
@@ -22,15 +21,21 @@ class TextDataset(Dataset):
         self.tokenizer = self.args['tokenizer']
         self.vocab_size = self.args['vocab_size']
         
+        if self.is_train is False:
+            self.vocab = torch.load(f'vocab/{self.vocab_size}_words.pth')
+        else:
+            self.vocab = None
+        
         self.pre_porcess()
         
     def pre_porcess(self):
         tokenizer = utils.get_tokenizer(self.tokenizer)
         
         if self.is_train:
-            vocab = utils.set_vocab(self.text, tokenizer, self.vocab_size)
+            self.vocab = utils.set_vocab(self.text, tokenizer, self.vocab_size)
+            torch.save(self.vocab, f'vocab/{self.vocab_size}_words.pth')
         
-        self.text = utils.integer_encoding(self.text, tokenizer, vocab)
+        self.text = utils.integer_encoding(self.text, tokenizer, self.vocab)
     
     def __len__(self):
         return self.length
@@ -45,7 +50,7 @@ def create_dataloader(args):
     vocab_size = train_dataset_args['vocab_size']
     
     train_dataset = TextDataset(train_dataset_args)
-    val_dataset = TextDataset(val_dataset_args, vocab=train_dataset.vocab, is_train=False)
+    val_dataset = TextDataset(val_dataset_args, is_train=False)
     
     def collate(samples):
         sequences = [sample['text'] for sample in samples]

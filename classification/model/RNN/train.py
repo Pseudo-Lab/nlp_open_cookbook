@@ -54,22 +54,21 @@ class Trainer:
         
     
     def fit(self):
+        val_log = {}
         for epoch in range(1, self.trainer_args['epochs'] + 1):
             total_loss = []
             pbar =  tqdm(self.train_dataloader, desc=f'Ep {epoch}')
             for batch in pbar:
                 step_log = self._train_step(batch)
                 total_loss.append(step_log['train_batch_loss'])
-                loss_print = f'tr_loss: {step_log["train_batch_loss"]:.03f}, val_loss: {step_log.get("val_loss", 0):.03f}, val_acc: {step_log.get("val_acc", 0):.03f}'
+                loss_print = f'tr_loss: {step_log["train_batch_loss"]:.03f}, val_loss: {val_log.get("val_loss", 0):.03f}, val_acc: {val_log.get("val_acc", 0):.03f}'
                 pbar.set_description(f'Ep {epoch}, {loss_print}')
                 
             if epoch % self.trainer_args['valid_every'] == 0:
                 val_log = self.evaluator.evaluate(self.model)
-                step_log['val_loss'] = val_log['val_loss']
-                step_log['val_acc'] = val_log['val_acc']
-                self.scheduler.step(step_log['val_loss'])
+                self.scheduler.step(val_log['val_loss'])
                 if self.evaluator.is_best:
-                    print(f'reached best val loss of {step_log["val_loss"]}, saving states...')
+                    print(f'reached best val accuracy of {val_log["val_acc"]}, saving states...')
                     ckpt_code = f'{epoch}iter_'
                     self.save_trainer_state(ckpt_code)
                     for ckpt in glob.glob(f'{self.trainer_args["checkpoint_dir"]}/*iter_trainer.pth'):

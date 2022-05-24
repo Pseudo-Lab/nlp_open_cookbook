@@ -10,7 +10,7 @@
         "val": {
             "file_path": "../../data/test_binary.csv",
             "tokenizer": "kkma",
-            "vocab_size": -1,
+            "vocab_size": 10000,
             "batch_size": 4,
             "shuffle": false
         }

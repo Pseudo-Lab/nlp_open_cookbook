@@ -10,16 +10,16 @@ def get_tokenizer(name):
     Returns:
         tokenizer
     """
-        if name == 'kkma':
-            tokenizer = Kkma()
-        
-        elif name == 'okt':
-            tokenizer = Okt()
-        
-        elif name == 'komoran':
-            tokenizer = Komoran()
-        
-        return tokenizer
+    if name == 'kkma':
+        tokenizer = Kkma()
+    
+    elif name == 'okt':
+        tokenizer = Okt()
+    
+    elif name == 'komoran':
+        tokenizer = Komoran()
+    
+    return tokenizer
 
 def yield_tokens(sequences, tokenizer):
     """generate token
@@ -51,6 +51,7 @@ def set_vocab(sequences, tokenizer, vocab_size):
                                       max_tokens=vocab_size)
     
     vocab.set_default_index(vocab['<unk>'])
+
     return vocab
 
 def integer_encoding(sequences, tokenizer, vocab):
