@@ -1,10 +1,5 @@
 """
-[beginner]
-
-- fit : train_set 학습 (self.model)
-- evaluate : eval_set 에 대한 score 출력
-- predict : test_set 에 대한 prediction 생성, score 출력
-
+License 정보 입력 (TO-DO)
 """
 
 from argparse import ArgumentParser
@@ -27,12 +22,38 @@ logger = logging.getLogger(__name__)
 
 
 class Trainer4Beginner:
+    """
+
+    [Trainer4Beginner]
+    
+    Language Model 사용이 익숙하지 않은 beginner 분들을 대상으로, 
+    KoELECTRA 모델의 학습, 평가, 예측 기능을 단순하게 구현한 Trainer Class 입니다
+
+    Trainer4Beginner Class 는 총 3가지의 메소드를 가집니다
+
+    - fit 
+    - evaluate
+    - predict 
+
+    메소드들에 대한 자세한 기능은 각 메소드의 주석에서 확인 가능합니다
+
+    """
     def __init__(self, 
                 args:AttrDict, 
                 model:ElectraForSequenceClassification, 
                 train_dataset:TensorDataset, 
-                eval_dataset:TensorDataset):
+                eval_dataset:TensorDataset) -> None:
+        """
 
+        KoELECTRA Trainer 객체를 생성합니다
+
+        Args:
+            args (AttrDict): 학습을 위한 여러 config 정보를 포함합니다
+            model (ElectraForSequenceClassification): huggingface의 분류 fine-tuning 을 지원하는 모델 객체 입니다
+            train_dataset (TensorDataset): 학습에 사용할 훈련 셋입니다
+            eval_dataset (TensorDataset): 검증에 사용할 검증 셋입니다
+
+        """
         self.model = model
         self.args = args
         self.train_dataset = train_dataset
@@ -40,16 +61,29 @@ class Trainer4Beginner:
         self.fitted = False
 
     def fit(self) -> None:
+        """
 
+        fit() 에서는 self.train_dataset 에 해당하는 훈련 데이터로 모델 학습을 수행합니다
+
+        fit()은 다음 기능을 포함합니다
+
+        - Shuffle 을 위한 RandomSampler 정의
+        - DataLoader 정의
+        - Optimizer 정의
+        - 모델 학습 수행
+        
+        """
         self.fitted = True
-
-        # [Train set Dataloader]
+        
+        # [Shuffle 을 위한 RandomSampler 정의]
         train_sampler = RandomSampler(self.train_dataset)
+
+        # [Dataloader 정의]
         train_dataloader = DataLoader(self.train_dataset, sampler=train_sampler, batch_size=self.args.train_batch_size, num_workers=4, pin_memory=True)
 
         t_total = len(train_dataloader) * self.args.num_train_epochs
 
-        # [Optimizer]
+        # [Optimizer 정의]
         no_decay = ['bias', 'LayerNorm.weight']
         optimizer_grouped_parameters = [
             {'params': [p for n, p in self.model.named_parameters() if not any(nd in n for nd in no_decay)],
@@ -99,12 +133,31 @@ class Trainer4Beginner:
         return 
     
     def evaluate(self) -> None:
+        """
 
+        evaluate() 에서는 self.eval_dataset 에 해당하는 검증 데이터로 
+        모델 검증을 수행하고 평가 점수(정확도)를 계산합니다
+
+        evaluate()은 다음 기능을 포함합니다
+
+        - 순차적 sampling 을 위한 SequentialSampler 정의
+        - DataLoader 정의
+        - 모델 평가 수행
+        - 예측 outputs 저장
+        - 예측 labels 생성
+        - Validation Accuracy 계산
+
+        Raises:
+            Exception: 모델 학습 이전에 호출 시 예외가 발생합니다
+        
+        """
         if not self.fitted:
             raise Exception(" Model should be fitted first ! ")
 
-        # [Validation set Dataloader] 
+        # [순차적 sampling 을 위한 SequentialSampler 정의] 
         eval_sampler = SequentialSampler(self.eval_dataset)
+
+        # [DataLoader 정의]
         eval_dataloader = DataLoader(self.eval_dataset, 
                                     sampler=eval_sampler, 
                                     batch_size=self.args.eval_batch_size, 
@@ -138,6 +191,7 @@ class Trainer4Beginner:
                 eval_loss += tmp_eval_loss.mean().item()
             nb_eval_steps += 1
             
+            # (예측 outputs 저장)
             if preds is None:
                 preds = logits.detach().cpu().numpy()
                 out_label_ids = inputs["labels"].detach().cpu().numpy()
@@ -145,22 +199,55 @@ class Trainer4Beginner:
                 preds = np.append(preds, logits.detach().cpu().numpy(), axis=0)
                 out_label_ids = np.append(out_label_ids, inputs["labels"].detach().cpu().numpy(), axis=0)
 
-        # [Validation Accuracy 계산]
         eval_loss = eval_loss / nb_eval_steps
+
+        # [예측 labels 생성]
         preds = np.argmax(preds, axis=1)
 
+        # [Validation Accuracy 계산]
         acc = compute_metrics('acc', out_label_ids, preds)
         
         print(f"***** Evaluation set Accuracy : {acc:.4f} *****")
     
     def predict(self, test_dataset: TensorDataset) -> pd.DataFrame:
+        """
 
+        predict() 에서는 test_dataset 에 해당하는 테스트 데이터로 
+        모델 추론을 수행하여 예측결과를 반환합니다
+
+        predict()은 다음 기능을 포함합니다
+
+        - 순차적 sampling 을 위한 SequentialSampler 정의
+        - DataLoader 정의
+        - 모델 추론 수행
+        - 예측 outputs 저장
+        - 예측 score 생성
+        - 예측 labels 생성
+        - Validation Accuracy 계산
+        
+        Args:
+            test_dataset (TensorDataset): 예측을 수행할 테스트 데이터셋
+
+        Raises:
+            Exception: _description_
+
+        Returns:
+            pd.DataFrame: 
+                데이터프레임 형태의 예측결과를 반환합니다. 
+                예측 label 인 "prediction" 과 
+                예측label 에 대한 probability 인 
+                "score" 컬럼을 포함합니다.
+
+        """
         if not self.fitted:
             raise Exception(" Model should be fitted first ! ")
 
-        # [Test set Dataloader]
         test_dataset = test_dataset if test_dataset else self.test_dataset
+
+        # [순차적 sampling 을 위한 SequentialSampler 정의]
         test_sampler = SequentialSampler(test_dataset)
+
+        # [Dataloader 정의]
         test_dataloader = DataLoader(test_dataset, 
                                     sampler=test_sampler, 
                                     batch_size=self.args.eval_batch_size, 
@@ -176,7 +263,7 @@ class Trainer4Beginner:
         preds = None
         out_label_ids = None
 
-        # [Test 수행]
+        # [모델 추론 수행]
         for batch in progress_bar(test_dataloader):
             self.model.eval()
             batch = tuple(t.to(self.args.device) for t in batch)
@@ -194,6 +281,7 @@ class Trainer4Beginner:
                 eval_loss += tmp_eval_loss.mean().item()
             nb_eval_steps += 1
             
+            # (예측 outputs 저장)
             if preds is None:
                 preds = logits.detach().cpu().numpy()
                 out_label_ids = inputs["labels"].detach().cpu().numpy()
@@ -201,21 +289,26 @@ class Trainer4Beginner:
                 preds = np.append(preds, logits.detach().cpu().numpy(), axis=0)
                 out_label_ids = np.append(out_label_ids, inputs["labels"].detach().cpu().numpy(), axis=0)
         
-        # [Prediction Dataframe 생성]
+        
         eval_loss = eval_loss / nb_eval_steps
+
+        # [예측 score 생성]
         all_probs=torch.max(
                             F.softmax(
                                     torch.tensor(preds, dtype=torch.float32), dim=-1
                                      ), dim=-1
                             )[0].numpy().tolist()
         
+        # [예측 labels 생성]
         preds = np.argmax(preds, axis=1)
         all_preds=preds.tolist()    
         
+        # [Prediction Dataframe 생성]
         result_df = pd.DataFrame()
         result_df[f'prediction'] = all_preds
         result_df[f'score'] = all_probs
 
+        # [Validation Accuracy 계산]
         acc = compute_metrics('acc', out_label_ids, preds)
 
         print(f"***** Test set Accuracy : {acc:.4f} *****")
@@ -223,6 +316,26 @@ class Trainer4Beginner:
         return result_df
 
 def main(cli_args:ArgumentParser):
+    """
+
+    KoELECTRA 로 학습, 평가, 추론을 수행하는 main 함수 입니다
+
+    다음과 같은 과정으로 이루어집니다
+
+    - 학습을 위한 Arguments 준비
+    - logging 준비
+    - Dataset 불러오기
+    - Tokenizer 불러오기
+    - Dataset 전처리
+    - Model 준비
+    - Model 학습 수행
+    - Model 평가 수행
+    - Model 추론(예측) 수행
+
+    Args:
+        cli_args (ArgumentParser): task와 config의 정보를 가집니다
+
+    """
 
     # [학습을 위한 Arguments 준비]
     with open(os.path.join(os.path.dirname(__file__), cli_args.config_dir, cli_args.task, cli_args.config_file)) as f:
@@ -234,15 +347,16 @@ def main(cli_args:ArgumentParser):
     init_logger()
     logger.info("Training/evaluation parameters {}".format(args))
 
+    # [Dataset 불러오기]
     train_df, test_df = load_data(args)
 
+    # [Tokenizer 불러오기]
     tokenizer = ElectraTokenizer.from_pretrained(
                                                 args.model_name_or_path,
                                                 do_lower_case=args.do_lower_case
                                                 )
 
-
-    # [Dataset 준비]
+    # [Dataset 전처리]
     processor = HFPreprocessor(args)
     train_dataset = processor.load_and_cache(args, tokenizer, train_df, "train")
     test_dataset = processor.load_and_cache(args, tokenizer, test_df, "test")
@@ -279,9 +393,10 @@ def main(cli_args:ArgumentParser):
     trainer.evaluate()
 
 
-    # [모델 예측 수행]
+    # [모델 추론(예측) 수행]
     predictions = trainer.predict(test_dataset)
     print(predictions.head())
+
 
 if __name__ == '__main__':
     cli_parser = ArgumentParser()
