@@ -1,7 +1,3 @@
-"""
-License 정보 입력 (TO-DO)
-"""
-
 import torch
 from torch.utils.data import TensorDataset
 from transformers import ElectraTokenizer

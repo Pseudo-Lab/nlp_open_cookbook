@@ -1,7 +1,3 @@
-"""
-License 정보 입력 (TO-DO)
-"""
-
 from argparse import ArgumentParser
 import json
 import os

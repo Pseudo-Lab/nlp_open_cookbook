@@ -1,7 +1,3 @@
-"""
-License 정보 입력 (TO-DO)
-"""
-
 import os
 import json
 import logging
