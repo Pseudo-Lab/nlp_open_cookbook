@@ -1,8 +1,8 @@
 ## ELECTRA (Efficiently Learning an Encoder that Classifies Token Replacements Accurately)
   
-박장원 님께서 공개하신 Pretrained KoELECTRA 모델과 Huggingface 와 Pytorch 코드를 사용하여 분류 태스크를 수행합니다.  
-  
-[박장원 님의 KOELECTRA Repo](https://github.com/monologg/KoELECTRA)
+박장원 님께서 공개하신 Pretrained KoELECTRA 모델의 Fine-tuning 을 통해 Classification 을 수행합니다  
+Huggingface 와 Pytorch base 코드를 사용합니다  
+[박장원 님의 KOELECTRA Repository](https://github.com/monologg/KoELECTRA)
 
 ### Dataset
 - NSMC (nsmc) : 영화리뷰가 긍정인지 부정인지 분류합니다
