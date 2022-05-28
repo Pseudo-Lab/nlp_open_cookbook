@@ -1,7 +1,3 @@
-"""
-License 정보 입력 (TO-DO)
-"""
-
 import os
 import json
 import logging
@@ -20,17 +16,17 @@ from preprocess import HFPreprocessor
 from callbacks import EarlyStopping
 from utils import init_logger, set_seed, compute_metrics, load_data, save_results
 
-from typing import Union, List
+from typing import Union, List, Dict
 
 logger = logging.getLogger(__name__)
 
 
-class Trainer4Expert:
+class Trainer4Intermediate:
     def __init__(self, 
-                args: AttrDict, 
-                model: ElectraForSequenceClassification, 
-                train_dataset: TensorDataset, 
-                eval_dataset: TensorDataset,
+                args:AttrDict, 
+                model:ElectraForSequenceClassification, 
+                train_dataset:TensorDataset, 
+                eval_dataset:TensorDataset,
                 metrics: Union[List, str],
                 ) -> None:
         """
@@ -49,18 +45,17 @@ class Trainer4Expert:
             - 'f1' : F1-score, (Macro, Micro, Weighted f1 모두 계산)
 
         """
-
+        
         self.model = model
         self.args = args
         self.train_dataset = train_dataset
         self.eval_dataset = eval_dataset
         self.metrics = metrics
-        self.args.evaluate_test_during_training = True if self.eval_dataset else False
         self.fitted = False
+        self.args.evaluate_test_during_training = True if self.eval_dataset else False
 
     def fit(self) -> None:
         """
-
         fit() 에서는 self.train_dataset 에 해당하는 훈련 데이터로 모델 학습을 수행합니다
 
         fit()은 다음 기능을 포함합니다
@@ -69,13 +64,8 @@ class Trainer4Expert:
         - Dataloader 정의
         - Optimizer 정의
         - Scheduler 정의
-            - get_linear_schedule_with_warmup
-            - EarlyStopping
         - 저장된 Optimizer, scheduler load
         - 모델 학습 수행
-            - gradient accumulation 수행
-            - Epoch 마다 검증 수행
-            - clip_grad_norm 수행
             - Epoch 마다 검증 수행
             - checkpoint 저장 : 최대 성능 갱신 시
             - Epoch 기준으로 Earlystoping 수행
@@ -104,9 +94,6 @@ class Trainer4Expert:
         ]
         optimizer = AdamW(optimizer_grouped_parameters, lr=self.args.learning_rate, eps=self.args.adam_epsilon)
 
-        # [Scheduler 정의] : get_linear_schedule_with_warmup
-        scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=int(t_total * self.args.warmup_proportion), num_training_steps=t_total)
-
         # [Scheduler 정의] : EarlyStopping
         early_stopping = EarlyStopping(self.args.es_patience, self.args.es_min_delta)
 
@@ -115,7 +102,6 @@ class Trainer4Expert:
             os.path.join(self.args.model_name_or_path, "scheduler.pt")
         ):
             optimizer.load_state_dict(torch.load(os.path.join(self.args.model_name_or_path, "optimizer.pt")))
-            scheduler.load_state_dict(torch.load(os.path.join(self.args.model_name_or_path, "scheduler.pt")))
 
         # [Logging]
         logger.info("***** Running training *****")
@@ -147,24 +133,12 @@ class Trainer4Expert:
                 
                 outputs = self.model(**inputs)
                 loss = outputs[0]
-
-                # (gradient accumulation 수행)
-                if self.args.gradient_accumulation_steps > 1:
-                    loss = loss / self.args.gradient_accumulation_steps
-
                 loss.backward()
                 tr_loss += loss.item()
 
-                # (clip_grad_norm 수행)
-                if (step + 1) % self.args.gradient_accumulation_steps == 0 or (
-                    len(train_dataloader) <= self.args.gradient_accumulation_steps
-                    and (step + 1) == len(train_dataloader)
-                ):
-                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.args.max_grad_norm)
-                    optimizer.step()
-                    scheduler.step()
-                    self.model.zero_grad()
-                    global_step += 1
+                optimizer.step()
+                self.model.zero_grad()
+                global_step += 1
 
             # (Epoch 마다 검증 수행)
             if self.args.logging_epochs > 0 and epoch % self.args.logging_epochs == 0:
@@ -184,7 +158,6 @@ class Trainer4Expert:
                     if not os.path.exists(output_dir):
                         print('output_dir made:', output_dir)
                         os.makedirs(output_dir)
-
                     model_to_save = (
                         self.model.module if hasattr(self.model, "module") else self.model
                     )
@@ -196,7 +169,6 @@ class Trainer4Expert:
                     # (optimizer 저장) : 최대 성능 갱신 시
                     if self.args.save_optimizer:
                         torch.save(optimizer.state_dict(), os.path.join(output_dir, "optimizer.pt"))
-                        torch.save(scheduler.state_dict(), os.path.join(output_dir, "scheduler.pt"))
                         logger.info("Saving optimizer and scheduler states to {}".format(output_dir))
 
                 if self.args.max_steps > 0 and global_step > self.args.max_steps:
@@ -214,7 +186,7 @@ class Trainer4Expert:
 
         return 
     
-    def evaluate(self, save_scores:bool = False) -> None:
+    def evaluate(self, save_scores=False) -> Dict[str, float]:
         """
 
         evaluate() 에서는 self.eval_dataset 에 해당하는 검증 데이터로 
@@ -241,7 +213,7 @@ class Trainer4Expert:
 
         """
         if not self.fitted:
-            raise Exception(" Model should be fitted first !")
+            raise Exception(" Model should be fitted first ! ")
         
         # [순차적 sampling 을 위한 SequentialSampler 정의] 
         eval_sampler = SequentialSampler(self.eval_dataset)
@@ -252,7 +224,7 @@ class Trainer4Expert:
                                     batch_size=self.args.eval_batch_size, 
                                     num_workers=4, pin_memory=True)
 
-        # [Logging]
+        
         logger.info(f"***** Running evaluation on eval dataset *****")
         logger.info(f"  Num examples = {len(self.eval_dataset)}")
         logger.info(f"  Eval Batch size = {self.args.eval_batch_size}")
@@ -288,7 +260,7 @@ class Trainer4Expert:
             else:
                 preds = np.append(preds, logits.detach().cpu().numpy(), axis=0)
                 out_label_ids = np.append(out_label_ids, inputs["labels"].detach().cpu().numpy(), axis=0)
-        
+
         eval_loss = eval_loss / nb_eval_steps
 
         # [예측 labels 생성]
@@ -439,6 +411,7 @@ def main(cli_args:ArgumentParser):
         cli_args (ArgumentParser): task와 config의 정보를 가집니다
 
     """
+
     # [학습을 위한 Arguments 준비]
     with open(os.path.join(os.path.dirname(__file__), cli_args.config_dir, cli_args.task, cli_args.config_file)) as f:
         args = AttrDict(json.load(f))   
@@ -488,8 +461,9 @@ def main(cli_args:ArgumentParser):
                     )
     model.to(args.device)
 
+
     # [Model 학습 수행]
-    trainer = Trainer4Expert(
+    trainer = Trainer4Intermediate(
                     args=args,
                     model = model,
                     train_dataset=train_dataset, 
