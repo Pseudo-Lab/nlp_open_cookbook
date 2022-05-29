@@ -1,0 +1,10 @@
+pandas
+torch
+sklearn
+gensim
+gluonnlp
+mxnet
+boto3
+transformers
+sentencepiece
+flask
