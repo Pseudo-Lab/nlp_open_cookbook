@@ -32,7 +32,7 @@ Huggingface 와 Pytorch base 코드를 사용합니다
 ### [How to Run]
 - conda 가상환경 세팅
 ```
-conda env create --file environment.yml # 가상환경 생성 
+conda env create --file environment.yaml # 가상환경 생성 
 ```
 - pip 패키지 설치
 ```
