@@ -53,4 +53,4 @@ if __name__ == '__main__':
     tokenizer = pickle.load(open(tokenizer_dir, 'rb'))
     label_enc = pickle.load(open(label_enc_dir, 'rb'))
 
-    app.run(host='0.0.0.0', port='1001', debug=True)
+    app.run(host='0.0.0.0', port='1000', debug=True)

@@ -5,6 +5,8 @@ BERT의 [CLS] 토큰을 분류 layer에 입력해 문장을 분류합니다.
 ### How to Run
 - 가상환경 세팅
 ```
+conda create -n "test" python=3.8
+conda activate test
 pip install -r requirements.txt
 ```
 
@@ -20,7 +22,13 @@ python train_multi_label.py
 
 - API Server 띄우기
 ```
-python api_server.py
+python api.py
+```
+
+- API Server 요청 보내기.  
+본인 환경에 맞는 ip 주소와 port를 수정해서 사용하세요.
+```
+python request.py
 ```
 
 ### Dataset
