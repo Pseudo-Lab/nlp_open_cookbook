@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 from torch.nn.utils.rnn import pad_sequence
 from collections import defaultdict
 
-import torch.tensor as T
+# import torch.tensor as T
 
 
 class SeqClassificationDataset:
@@ -43,15 +43,15 @@ class SeqClassificationDataset:
 
     def _collator(self, data_list):
         x = pad_sequence(
-            [T(e[0]) for e in data_list],
+            [torch.tensor(e[0]) for e in data_list],
             batch_first=True,
             padding_value=self.tokenizer.pad_token_id,
         )
         mask = pad_sequence(
-            [T(e[1]) for e in data_list], batch_first=True, padding_value=0
+            [torch.tensor(e[1]) for e in data_list], batch_first=True, padding_value=0
         )
-        y = T([e[2] for e in data_list])
-        _len = T([e[3] for e in data_list])
+        y = torch.tensor([e[2] for e in data_list])
+        _len = torch.tensor([e[3] for e in data_list])
         ret = {"input_ids": x, "attention_mask": mask, "label": y, "length": _len}
         return {k: v.to(self.device) for k, v in ret.items()}
 

@@ -1,1 +1,0 @@
-{"from_checkpoint": "", "checkpoint_dir": "./ckpt-multi", "wandb_project_name": "", "num_epoch": 10, "valid_every": 40, "batch_size": 128, "max_seq_len": 128, "eps": 1e-08, "betas": [0.9, 0.99], "lr": 2e-05, "min_lr": 1e-06, "patience": 20, "factor": 0.6, "task": "multi", "device": "3", "do_eval": false}
