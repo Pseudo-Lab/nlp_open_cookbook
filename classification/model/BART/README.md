@@ -12,11 +12,12 @@ Pretrained KoBART 모델을 활용하여 분류 태스크를 수행합니다. BA
 
 - 가상환경 세팅
 ```
-conda env create --file environment.yml # conda를 이용하는 경우 
-```
-```
 pip install -r requirements.txt # pip을 이용하는 경우
 ```
+```
+conda env create --file environment.yml # conda를 이용하는 경우 
+```
+
 
 - binary dataset으로 분류기 학습하기
 ```
