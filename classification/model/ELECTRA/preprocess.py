@@ -14,7 +14,10 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SingleData:
     """
-    단일 데이터 정보를 속성별로 포함합니다
+    단일 데이터 정보를 속성별로 포함
+    sid : 데이터 내 idx
+    text : 문장
+    label : 라벨
     """
     sid:int
     text:str
@@ -23,7 +26,8 @@ class SingleData:
 @dataclass
 class SingleFeature:
     """
-    단일 데이터에 대한 encoding output 을 포함합니다
+    단일 데이터에 Tokenizer로 encoding 을 수행한
+    결과 output 을 포함합니다
     """
     input_ids: torch.tensor
     attention_mask: torch.tensor
