@@ -4,3 +4,5 @@ tqdm
 pytest
 wandb
 transformers
+torch
+sklearn
