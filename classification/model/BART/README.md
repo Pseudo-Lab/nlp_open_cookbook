@@ -12,12 +12,16 @@ Pretrained KoBART 모델을 활용하여 분류 태스크를 수행합니다. BA
 
 - 가상환경 세팅
 ```
-conda env create --file environment.yml # 가상환경 생성 
+pip install -r requirements.txt # pip을 이용하는 경우
 ```
+```
+conda env create --file environment.yml # conda를 이용하는 경우 
+```
+
 
 - binary dataset으로 분류기 학습하기
 ```
-python train_advanced.py binary
+python train_advanced.py [ binary | multi_class ]
 ```
 ```
 dropping 1 samples due to nan values...
@@ -54,8 +58,8 @@ Ep 10, tr_loss=0.061, val_loss=1.324, val_acc=0.842: 100%|███████�
 
 ### Dataset
 
-- NSMC : 영화리뷰가 긍정적(0)인지 부정적(1)인지 분류합니다.
-- KLUE-tc : KLUE benchmark의 일부로 뉴스 타이틀을 보고 주제를 분류합니다.
+- NSMC(binary) : 영화리뷰가 긍정적(0)인지 부정적(1)인지 분류합니다.
+- KLUE-tc(multi_class) : KLUE benchmark의 일부로 뉴스 타이틀을 보고 주제를 분류합니다.
 
 ### Benchmark
 

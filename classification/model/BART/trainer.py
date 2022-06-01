@@ -34,7 +34,10 @@ class Trainer:
             patience=self.args.patience,
             min_lr=self.args.min_lr,
         )
-        self.loss_fn = nn.CrossEntropyLoss()
+        if args.task == "multi_label":
+            self.loss_fn = nn.BCEWithLogitsLoss()
+        else:
+            self.loss_fn = nn.CrossEntropyLoss()
 
         self.global_step = 0  # initial
 
@@ -73,7 +76,8 @@ class Trainer:
 
         loss_print, val_loss_print, val_acc_print = None, None, None
         for epoch in range(1, self.args.num_epoch + 1):
-            for batch in (pbar := tqdm(self.train_data_loader, desc=f"Ep {epoch}")):
+            pbar = tqdm(self.train_data_loader, desc=f"Ep {epoch}")
+            for batch in pbar:
                 self.global_step += 1
                 step_log = self._train_step(batch)
                 loss_print = f"tr_loss={step_log['train_batch_loss'] :.03f}, val_loss={val_loss_print}, val_acc={val_acc_print}"

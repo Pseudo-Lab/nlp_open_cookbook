@@ -5,26 +5,29 @@ import sys
 from dataloader import SeqClassificationDataset
 from trainer import Trainer
 from classifier import BartClassifier
+
 # from config import parse_args
 from eval import Evaluate
 
 import json
-from utils import dotdict
+from utils import dotdict, DATASET_MAP
 
 if __name__ == "__main__":
 
     # load config
-    with open(f"config/{sys.argv[1]}/config.json",'rt') as f:
+    with open(f"config/{sys.argv[1]}/config.json", "rt") as f:
         args = json.load(f)
     args = dotdict(args)
 
     # load tokenizer and data
+    train_path = DATASET_MAP[args.task].format("train")
+    test_path = DATASET_MAP[args.task].format("test")
     tokenizer = PreTrainedTokenizerFast.from_pretrained("hyunwoongko/kobart")
     train_ds = SeqClassificationDataset(
-        args, data_path=f"../../data/train_{args.task}.csv", tokenizer=tokenizer
+        args, data_path=f"../../data/{train_path}", tokenizer=tokenizer
     )
     test_ds = SeqClassificationDataset(
-        args, data_path=f"../../data/test_{args.task}.csv", tokenizer=tokenizer
+        args, data_path=f"../../data/{test_path}", tokenizer=tokenizer
     )
 
     model = BartClassifier(args=args, num_labels=len(train_ds.labels), hidden_dim=768)

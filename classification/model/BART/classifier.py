@@ -2,7 +2,8 @@ import torch.nn as nn
 import torch
 from transformers import BartModel
 from typing import List
-import torch.tensor as T
+
+# import torch.tensor as T
 
 
 class BartClassifier(nn.Module):
@@ -29,4 +30,4 @@ class BartClassifier(nn.Module):
 
     def _generate_gather_index(self, length_list: List):
         ret = [[[_len - 2] * self.hidden_dim] for _len in length_list]
-        return T(ret).to(self.device)
+        return torch.tensor(ret).to(self.device)

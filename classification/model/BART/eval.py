@@ -3,6 +3,7 @@ import torch.nn as nn
 from typing import NamedTuple, Dict
 from collections import defaultdict
 from sklearn.metrics import accuracy_score, f1_score
+from tqdm import tqdm
 
 
 class Evaluate:
@@ -20,7 +21,7 @@ class Evaluate:
         model.eval()
         ret = defaultdict(float)
         ans, pred = [], []
-        for batch in self.val_data_loader:
+        for batch in tqdm(self.val_data_loader, desc="evaluate"):
             step_log = self._valid_step(model, batch)
             ret["n"] += step_log["n"]
             ret["valid_loss"] += step_log["valid_batch_loss"] * step_log["n"]

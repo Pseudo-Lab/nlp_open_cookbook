@@ -51,15 +51,15 @@ python trainer_intermediate.py --task [nsmc | ynat]
 python trainer_expert.py --task [nsmc | ynat]
 ```
   
-[UPDATE]  
+### [UPDATE]  
 (2022.04) ckpt 파일명에 시간연월일 추가 : 덮어쓰기 방지  
 (2022.04) 성능 결과 저장 파일명에 시간연월일 추가 : 덮어쓰기 방지  
 (2022.04) config 파일 내 earlystopping argument 추가 (es_metric, es_patience, es_min_delta)  
-(2022.04) Level별 Cookbook 을 위한 Refactoring 수행 (PR #7)
-(2022.05) type hint, docstring 추가
+(2022.04) Level별 Cookbook 을 위한 Refactoring 수행 (PR #7)  
+(2022.05) type hint, docstring 추가  
 
 
-[TO-DO]
+### [TO-DO]
 - multi label 분류 코드 개발  
 - level 별 기능 추가  
     - Intermediate  
