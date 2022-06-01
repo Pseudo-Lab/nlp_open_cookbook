@@ -1,0 +1,10 @@
+pandas==1.4.2
+torch==1.11.0
+sklearn==0.0
+gensim==4.2.0
+gluonnlp==0.10.0
+mxnet==1.9.0
+boto3==1.24.0
+transformers==4.19.2
+sentencepiece==0.1.96
+flask==2.1.2
