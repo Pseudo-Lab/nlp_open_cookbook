@@ -5,6 +5,7 @@ from collections import defaultdict
 from sklearn.metrics import accuracy_score, f1_score
 from tqdm import tqdm
 
+
 class Evaluate:
     """best score tracking, hold evaluation args, evaluate"""
 

@@ -34,7 +34,10 @@ class Trainer:
             patience=self.args.patience,
             min_lr=self.args.min_lr,
         )
-        self.loss_fn = nn.CrossEntropyLoss()
+        if args.task == "multi_label":
+            self.loss_fn = nn.BCEWithLogitsLoss()
+        else:
+            self.loss_fn = nn.CrossEntropyLoss()
 
         self.global_step = 0  # initial
 

@@ -5,6 +5,7 @@ import sys
 from dataloader import SeqClassificationDataset
 from trainer import Trainer
 from classifier import BartClassifier
+
 # from config import parse_args
 from eval import Evaluate
 
@@ -14,12 +15,12 @@ from utils import dotdict, DATASET_MAP
 if __name__ == "__main__":
 
     # load config
-    with open(f"config/{sys.argv[1]}/config.json",'rt') as f:
+    with open(f"config/{sys.argv[1]}/config.json", "rt") as f:
         args = json.load(f)
     args = dotdict(args)
 
     # load tokenizer and data
-    train_path = DATASET_MAP[args.task].format("train") 
+    train_path = DATASET_MAP[args.task].format("train")
     test_path = DATASET_MAP[args.task].format("test")
     tokenizer = PreTrainedTokenizerFast.from_pretrained("hyunwoongko/kobart")
     train_ds = SeqClassificationDataset(
