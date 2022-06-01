@@ -8,8 +8,7 @@
 - BART : [바로가기](./classification//model/BART)
 - ELECTRA : [바로가기](./classification//model/ELECTRA)
 - Naive Bayes : [바로가기](./classification//model/NB)
-- RNN
-- Tree
+- Tree : [바로가기](./classification//model/Tree)
 
 ### Contributor
 - 이정훈
