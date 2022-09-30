@@ -40,7 +40,7 @@ ipython-genutils @ file:///tmp/build/80754af9/ipython_genutils_1606773439826/wor
 ipywidgets @ file:///tmp/build/80754af9/ipywidgets_1634143127070/work
 jedi @ file:///tmp/build/80754af9/jedi_1644299024593/work
 Jinja2 @ file:///opt/conda/conda-bld/jinja2_1647436528585/work
-joblib==1.1.0
+joblib==1.2.0
 json5==0.9.6
 jsonschema==4.4.0
 jupyter==1.0.0
